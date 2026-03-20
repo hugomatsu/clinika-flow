@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./build-share-android.sh --notes \"Fixed What''s New popup appearing twice and showing full history; Story Detail buttons moved to scrollable area with only Play fixed at bottom; removed edit button from story player\")",
+      "Bash(flutter pub:*)",
+      "Bash(./build-share-android.sh --notes \"Firebase Analytics + Crashlytics integrated: automatic screen tracking, FTUE funnel \\(app open → loading → whats new → account created → home → play → finish\\), story events \\(opened/play started/completed\\), behavior events \\(create story tapped, audio muted\\). Story Detail card-grouped layout. Official/Community buttons centred. App renamed to Contos Mágicos.\")",
+      "Bash(./build-share-android.sh --notes \"Google Sign-In on login screen. Guest users can link their account to Google or Email/Password from the Profile screen — link section only shows for guest accounts and disappears after linking. Apple Sign-In placeholder ready for future.\")",
+      "Bash(keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android)",
+      "Bash(keytool -list -v -keystore ~/.android/debug.keystore -storepass android)",
+      "Read(//Users/hugomatsumoto/.android/**)",
+      "Bash(keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android)",
+      "Bash(openssl sha1:*)",
+      "Bash(openssl sha256:*)"
+    ]
+  }
+}
