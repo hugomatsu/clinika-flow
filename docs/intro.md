@@ -13,12 +13,12 @@ A custom-built mobile application designed to streamline myofascial release ther
 
 | Component | Technology |
 |-----------|-----------|
-| **Framework** | Flutter (iOS & Android) |
-| **Architecture** | Offline-first with cloud sync |
-| **Local Storage** | Isar (fast, efficient persistence without internet) |
-| **Cloud Backend** | Firebase Firestore (Phase 3: backup & data synchronization) |
+| **Framework** | Flutter (iOS, Android & Web) |
+| **Architecture** | Offline-first with automatic cloud sync |
+| **Database** | Firebase Firestore with offline persistence (IndexedDB on web, SQLite cache on mobile) |
+| **Cloud Backend** | Firebase Firestore (single source of truth — auto-syncs when online) |
 | **Calendar Integration** | Google Calendar API (Phase 3: bidirectional sync) |
-| **Authentication** | Local PIN/Biometric (Phase 2), Firebase Auth (Phase 3) |
+| **Authentication** | Firebase Auth (Phase 2 — currently single-clinic mode with `clinicId = 'default'`) |
 
 ---
 
@@ -27,7 +27,7 @@ A custom-built mobile application designed to streamline myofascial release ther
 The app is designed to reflect the client's brand identity through customizable color palettes.
 
 **Color Palette Management:**
-- **Storage:** Color preferences are saved in device local storage (Hive/Isar/SQLite) and synced to cloud
+- **Storage:** Color preferences are saved in Firestore (`clinics/{clinicId}/settings/branding`) and cached locally for offline access
 - **Customization:** Administrator can define primary, secondary, accent, and neutral colors
 - **Application:** All UI components automatically follow the stored palette:
   - Buttons, cards, and interactive elements use primary/secondary colors
@@ -244,12 +244,6 @@ Protocol
 - Ensure WCAG color contrast compliance for accessibility
 - Test color combinations across all app screens
 
-### Share Feature Protocol
-- **Always use `SharePreviewScreen` for sharing Stories** (when implemented)
-- No direct `Share.share()` calls for Stories
-- Deep link format: `https://magicechoes.app/story/<story_id>`
-- Preview card must include: Cover Image, Title, Description, Author, App Badge
-
 ### Data Privacy & Security
 - Comply with LGPD and local data protection regulations
 - Isolate photos from device gallery
@@ -267,25 +261,27 @@ Protocol
 
 ## Next Steps
 
-### Phase 1: Foundation
-- [ ] Set up Flutter project structure and dependencies
-- [ ] Design and implement local data models with Isar
-- [ ] Build authentication UI (PIN/Biometric)
+### Phase 1: Foundation ✅
+- [x] Set up Flutter project structure and dependencies
+- [x] Firebase Firestore with offline persistence (replaces Isar — works on web + mobile)
+- [x] All data models (Patient, Appointment, SessionRecord, FinancialRecord, BrandingPreferences)
+- [x] Patient management screens (list, detail, form)
+- [x] Appointment scheduling interface (week picker, form)
+- [x] Session recording workflow (VAS sliders, technique chips)
+- [x] Dashboard with operational and financial metrics
+- [x] Branding/color customization system
+- [x] Localization (pt_BR default, en fallback)
 
-### Phase 2: Core Features
-- [ ] Develop patient management screens
-- [ ] Implement appointment scheduling interface
-- [ ] Create session recording workflow
-- [ ] Build dashboard with operational and financial metrics
-- [ ] Implement template system (default tags and protocols)
-- [ ] Build branding/color customization system
+### Phase 2: Auth & Clinic Isolation
+- [ ] Firebase Auth (Email/Password or Google Sign-In)
+- [ ] Replace `_clinicId = 'default'` with authenticated user's UID
+- [ ] Firestore Security Rules to isolate each clinic's data
 
 ### Phase 3: Integration & Polish
 - [ ] Integrate Google Calendar API (bidirectional sync)
-- [ ] Implement cloud backup (Firebase Firestore)
 - [ ] Add data export functionality (PDF/CSV)
-- [ ] Firebase authentication integration
 - [ ] Testing and performance optimization
+- [ ] Template system (custom session tags and protocols)
 
 ### Phase 4: Enhancement (Future)
 - [ ] Photo annotation tools

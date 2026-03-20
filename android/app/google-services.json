@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "861507979595",
+    "project_id": "clinika-flow",
+    "storage_bucket": "clinika-flow.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861507979595:android:c797fa6f23b57da655c0ce",
+        "android_client_info": {
+          "package_name": "com.example.clinika_flow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3pNwnY1h8FgjWcgtXhKoRlRwM4B2o7NQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

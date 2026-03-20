@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs sed:*)",
+      "Bash(flutter run:*)",
+      "Bash(/usr/local/share/flutter/bin/flutter --version)",
+      "Bash(flutter --version)"
+    ]
+  }
+}
