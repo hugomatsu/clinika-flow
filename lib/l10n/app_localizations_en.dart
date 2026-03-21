@@ -557,4 +557,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String painScore(int pre, int post) {
     return 'Pain: $pre → $post';
   }
+
+  @override
+  String get fieldLibrary => 'Field library';
+
+  @override
+  String get searchFields => 'Search fields...';
+
+  @override
+  String get customField => 'Custom field';
+
+  @override
+  String get popular => 'Popular';
+
+  @override
+  String get sendAnamnesis => 'Send anamnesis';
+
+  @override
+  String get anamnesisSent => 'Anamnesis link created!';
+
+  @override
+  String get anamnesisStatusPending => 'Waiting for patient to fill';
+
+  @override
+  String get anamnesisStatusOpened => 'Patient opened the form';
+
+  @override
+  String get anamnesisStatusCompleted => 'Anamnesis completed';
+
+  @override
+  String get anamnesisExpired => 'This link has expired';
+
+  @override
+  String get anamnesisInvalidLink => 'Invalid or expired link';
+
+  @override
+  String get anamnesisSubmitted => 'Anamnesis submitted successfully!';
+
+  @override
+  String get anamnesisSubmittedDesc =>
+      'Your answers have been saved. You may close this page.';
+
+  @override
+  String get anamnesisFormTitle => 'Anamnesis';
+
+  @override
+  String get submitAnamnesis => 'Submit';
+
+  @override
+  String get anamnesisLinkCopied => 'Link copied!';
+
+  @override
+  String get shareAnamnesis => 'Share link';
+
+  @override
+  String get resendAnamnesis => 'Resend link';
+
+  @override
+  String get copyLink => 'Copy link';
+
+  @override
+  String get anamnesisReadOnly => 'This anamnesis has already been submitted.';
+
+  @override
+  String get clinicLogo => 'Clinic logo';
+
+  @override
+  String get removeLogo => 'Remove logo';
+
+  @override
+  String get tapToAddLogo => 'Tap to add logo';
 }

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
+import 'screens/anamnesis/external_anamnesis_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'services/theme_service.dart';
@@ -28,21 +29,50 @@ class ClinikaApp extends StatelessWidget {
             Locale('en'),
           ],
           locale: const Locale('pt', 'BR'),
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              }
-              if (snapshot.hasData) {
-                return const MainScreen();
-              }
-              return const LoginScreen();
-            },
-          ),
+          // No `home:` — onGenerateRoute handles ALL routes including initial.
+          // On web, the browser URL becomes the initial route.
+          onGenerateRoute: (settings) {
+            final uri = Uri.parse(settings.name ?? '/');
+
+            // /anamnesis/<token> — public route, no auth required
+            if (uri.pathSegments.length == 2 &&
+                uri.pathSegments[0] == 'anamnesis') {
+              final token = uri.pathSegments[1];
+              return MaterialPageRoute(
+                settings: settings,
+                builder: (_) => ExternalAnamnesisScreen(token: token),
+              );
+            }
+
+            // Everything else → auth gate
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => const _AuthGate(),
+            );
+          },
         );
+      },
+    );
+  }
+}
+
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasData) {
+          return const MainScreen();
+        }
+        return const LoginScreen();
       },
     );
   }

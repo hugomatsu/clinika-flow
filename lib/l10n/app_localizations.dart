@@ -1177,6 +1177,144 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Dor: {pre} → {post}'**
   String painScore(int pre, int post);
+
+  /// No description provided for @fieldLibrary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Biblioteca de campos'**
+  String get fieldLibrary;
+
+  /// No description provided for @searchFields.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar campos...'**
+  String get searchFields;
+
+  /// No description provided for @customField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Campo personalizado'**
+  String get customField;
+
+  /// No description provided for @popular.
+  ///
+  /// In pt, this message translates to:
+  /// **'Popular'**
+  String get popular;
+
+  /// No description provided for @sendAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar anamnese'**
+  String get sendAnamnesis;
+
+  /// No description provided for @anamnesisSent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link de anamnese criado!'**
+  String get anamnesisSent;
+
+  /// No description provided for @anamnesisStatusPending.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aguardando preenchimento'**
+  String get anamnesisStatusPending;
+
+  /// No description provided for @anamnesisStatusOpened.
+  ///
+  /// In pt, this message translates to:
+  /// **'Paciente abriu o formulário'**
+  String get anamnesisStatusOpened;
+
+  /// No description provided for @anamnesisStatusCompleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamnese preenchida'**
+  String get anamnesisStatusCompleted;
+
+  /// No description provided for @anamnesisExpired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este link expirou'**
+  String get anamnesisExpired;
+
+  /// No description provided for @anamnesisInvalidLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link inválido ou expirado'**
+  String get anamnesisInvalidLink;
+
+  /// No description provided for @anamnesisSubmitted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamnese enviada com sucesso!'**
+  String get anamnesisSubmitted;
+
+  /// No description provided for @anamnesisSubmittedDesc.
+  ///
+  /// In pt, this message translates to:
+  /// **'Suas respostas foram salvas. Você pode fechar esta página.'**
+  String get anamnesisSubmittedDesc;
+
+  /// No description provided for @anamnesisFormTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamnese'**
+  String get anamnesisFormTitle;
+
+  /// No description provided for @submitAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar'**
+  String get submitAnamnesis;
+
+  /// No description provided for @anamnesisLinkCopied.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link copiado!'**
+  String get anamnesisLinkCopied;
+
+  /// No description provided for @shareAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compartilhar link'**
+  String get shareAnamnesis;
+
+  /// No description provided for @resendAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reenviar link'**
+  String get resendAnamnesis;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Copiar link'**
+  String get copyLink;
+
+  /// No description provided for @anamnesisReadOnly.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta anamnese já foi preenchida.'**
+  String get anamnesisReadOnly;
+
+  /// No description provided for @clinicLogo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Logo da clínica'**
+  String get clinicLogo;
+
+  /// No description provided for @removeLogo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover logo'**
+  String get removeLogo;
+
+  /// No description provided for @tapToAddLogo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Toque para adicionar o logo'**
+  String get tapToAddLogo;
 }
 
 class _AppLocalizationsDelegate

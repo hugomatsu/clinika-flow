@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
+import '../../data/preset_fields.dart';
 
 // Cached list of templates for the sub-template picker
 List<SessionTemplate> _cachedTemplates = [];
@@ -62,6 +63,25 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
         label: _fieldTypeName(type, loc),
         order: _fields.length,
         addedInVersion: (widget.template?.currentVersion ?? 0) + 1,
+      ));
+    });
+  }
+
+  void _addPresetField(PresetField preset) {
+    setState(() {
+      _fields.add(FieldDefinition(
+        guid: _newGuid(),
+        type: preset.type,
+        label: preset.label,
+        order: _fields.length,
+        addedInVersion: (widget.template?.currentVersion ?? 0) + 1,
+        config: Map<String, dynamic>.from(
+          preset.config.map((k, v) {
+            if (v is List) return MapEntry(k, List.from(v));
+            if (v is Map) return MapEntry(k, Map<String, dynamic>.from(v));
+            return MapEntry(k, v);
+          }),
+        ),
       ));
     });
   }
@@ -805,19 +825,26 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
   void _showAddFieldSheet(BuildContext context, AppLocalizations loc) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: FieldType.values.map((type) {
-            return ListTile(
-              leading: Icon(_fieldIcon(type)),
-              title: Text(_fieldTypeName(type, loc)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _addField(type);
-              },
-            );
-          }).toList(),
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (ctx, scrollCtrl) => _FieldLibrarySheet(
+          scrollController: scrollCtrl,
+          onAddPresets: (presets) {
+            Navigator.pop(ctx);
+            for (final p in presets) {
+              _addPresetField(p);
+            }
+          },
+          onSelectCustom: (type) {
+            Navigator.pop(ctx);
+            _addField(type);
+          },
+          fieldTypeName: _fieldTypeName,
+          fieldIcon: _fieldIcon,
         ),
       ),
     );
@@ -869,5 +896,247 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
       case FieldType.toggle:
         return Icons.toggle_on_outlined;
     }
+  }
+}
+
+// ── Field library sheet (presets + custom) ──────────────────────────────────
+
+class _FieldLibrarySheet extends StatefulWidget {
+  final ScrollController scrollController;
+  final ValueChanged<List<PresetField>> onAddPresets;
+  final ValueChanged<FieldType> onSelectCustom;
+  final String Function(FieldType, AppLocalizations) fieldTypeName;
+  final IconData Function(FieldType) fieldIcon;
+
+  const _FieldLibrarySheet({
+    required this.scrollController,
+    required this.onAddPresets,
+    required this.onSelectCustom,
+    required this.fieldTypeName,
+    required this.fieldIcon,
+  });
+
+  @override
+  State<_FieldLibrarySheet> createState() => _FieldLibrarySheetState();
+}
+
+class _FieldLibrarySheetState extends State<_FieldLibrarySheet> {
+  String _search = '';
+  String? _selectedCategory;
+  final Set<int> _selected = {}; // indices into presetFields
+
+  List<PresetField> get _filtered {
+    var list = presetFields;
+    if (_selectedCategory != null) {
+      list = list.where((f) => f.category == _selectedCategory).toList();
+    }
+    if (_search.isNotEmpty) {
+      final q = _search.toLowerCase();
+      list = list.where((f) {
+        if (f.label.toLowerCase().contains(q)) return true;
+        if (f.category.toLowerCase().contains(q)) return true;
+        final opts = f.config['options'];
+        if (opts is List) {
+          if (opts.any((o) => o.toString().toLowerCase().contains(q))) {
+            return true;
+          }
+        }
+        return false;
+      }).toList();
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final filtered = _filtered;
+
+    // Group by category, keeping original index for selection tracking
+    final grouped = <String, List<MapEntry<int, PresetField>>>{};
+    for (final f in filtered) {
+      final idx = presetFields.indexOf(f);
+      grouped.putIfAbsent(f.category, () => []).add(MapEntry(idx, f));
+    }
+
+    return Column(
+      children: [
+        // Drag handle
+        Container(
+          margin: const EdgeInsets.only(top: 8, bottom: 4),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: colorScheme.onSurface.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        // Title
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(loc.fieldLibrary,
+              style: Theme.of(context).textTheme.titleMedium),
+        ),
+        // Search bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            autofocus: false,
+            decoration: InputDecoration(
+              hintText: loc.searchFields,
+              prefixIcon: const Icon(Icons.search, size: 20),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+            onChanged: (v) => setState(() => _search = v),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Category chips
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: FilterChip(
+                  label: Text(loc.all),
+                  selected: _selectedCategory == null,
+                  onSelected: (_) =>
+                      setState(() => _selectedCategory = null),
+                ),
+              ),
+              ...presetCategories.map((cat) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: FilterChip(
+                      label: Text(cat),
+                      selected: _selectedCategory == cat,
+                      onSelected: (_) => setState(
+                          () => _selectedCategory =
+                              _selectedCategory == cat ? null : cat),
+                    ),
+                  )),
+            ],
+          ),
+        ),
+        const Divider(height: 16),
+        // Field list
+        Expanded(
+          child: ListView(
+            controller: widget.scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              // Preset fields grouped by category
+              ...grouped.entries.expand((entry) => [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 4),
+                      child: Text(entry.key,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.bold)),
+                    ),
+                    ...entry.value.map((e) {
+                      final idx = e.key;
+                      final preset = e.value;
+                      final isSelected = _selected.contains(idx);
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(widget.fieldIcon(preset.type),
+                            size: 20, color: colorScheme.primary),
+                        title: Text(preset.label),
+                        subtitle: Text(
+                          widget.fieldTypeName(preset.type, loc),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: colorScheme.onSurface
+                                  .withValues(alpha: 0.5)),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (preset.popular)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(Icons.star_rounded,
+                                    size: 18,
+                                    color: Colors.amber.shade700),
+                              ),
+                            Checkbox(
+                              value: isSelected,
+                              onChanged: (v) => setState(() {
+                                if (v == true) {
+                                  _selected.add(idx);
+                                } else {
+                                  _selected.remove(idx);
+                                }
+                              }),
+                            ),
+                          ],
+                        ),
+                        onTap: () => setState(() {
+                          if (isSelected) {
+                            _selected.remove(idx);
+                          } else {
+                            _selected.add(idx);
+                          }
+                        }),
+                      );
+                    }),
+                  ]),
+              // Custom field section
+              const Divider(height: 24),
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                child: Text(loc.customField,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold)),
+              ),
+              ...FieldType.values.map((type) => ListTile(
+                    dense: true,
+                    leading: Icon(widget.fieldIcon(type),
+                        size: 20,
+                        color: colorScheme.onSurface
+                            .withValues(alpha: 0.6)),
+                    title: Text(widget.fieldTypeName(type, loc)),
+                    onTap: () => widget.onSelectCustom(type),
+                  )),
+              const SizedBox(height: 80),
+            ],
+          ),
+        ),
+        // Add button (visible when presets are selected)
+        if (_selected.isNotEmpty)
+          SafeArea(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    final picked = _selected
+                        .toList()
+                      ..sort();
+                    widget.onAddPresets(
+                        picked.map((i) => presetFields[i]).toList());
+                  },
+                  icon: const Icon(Icons.add),
+                  label: Text('${loc.addField} (${_selected.length})'),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

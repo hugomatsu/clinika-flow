@@ -1295,20 +1295,173 @@ class _SubTemplateFormScreenState extends State<_SubTemplateFormScreen> {
         );
 
       case FieldType.image:
+        return _buildSubImage(field, colorScheme);
+
       case FieldType.subTemplate:
-        // Simplified rendering for nested levels
         return Card(
           child: ListTile(
-            leading: Icon(
-              field.type == FieldType.image
-                  ? Icons.image_outlined
-                  : Icons.article_outlined,
-              color: colorScheme.primary,
-            ),
+            leading: Icon(Icons.article_outlined, color: colorScheme.primary),
             title: Text(field.label),
           ),
         );
     }
+  }
+
+  Widget _buildSubImage(FieldDefinition field, ColorScheme colorScheme) {
+    final hint = field.config['hint'] ?? '';
+    final loc = AppLocalizations.of(context)!;
+    final urls = List<String>.from(
+        (_values[field.guid] ?? <String>[]) as List);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label,
+                style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            if (urls.isNotEmpty) ...[
+              SizedBox(
+                height: 120,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: urls.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) => Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _showSubFullImage(urls[i]),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            urls[i],
+                            height: 120,
+                            width: 120,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 120,
+                              width: 120,
+                              color: colorScheme.surfaceContainerHighest,
+                              child: const Icon(Icons.broken_image_outlined),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (!widget.viewMode)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                urls.removeAt(i);
+                                _values[field.guid] = urls;
+                              });
+                            },
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.close,
+                                  size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (!widget.viewMode)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showSubImageSourceSheet(field, loc),
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: Text(loc.addPhoto),
+                ),
+              )
+            else if (urls.isEmpty && hint.isNotEmpty)
+              Text(hint,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSubFullImage(String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image, color: Colors.white54, size: 64)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickSubImage(FieldDefinition field, ImageSource source) async {
+    final url = await ImageService.pickAndUpload(source: source);
+    if (url != null && mounted) {
+      setState(() {
+        final urls = List<String>.from(
+            (_values[field.guid] ?? <String>[]) as List);
+        urls.add(url);
+        _values[field.guid] = urls;
+      });
+    }
+  }
+
+  void _showSubImageSourceSheet(FieldDefinition field, AppLocalizations loc) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(loc.camera),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickSubImage(field, ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(loc.gallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickSubImage(field, ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

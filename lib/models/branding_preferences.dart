@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BrandingPreferences {
   String clinicName;
+  String logoUrl;
   // hex codes including #
   String primaryColor;
   String secondaryColor;
@@ -11,6 +12,7 @@ class BrandingPreferences {
 
   BrandingPreferences({
     this.clinicName = 'Kelyn Physio',
+    this.logoUrl = '',
     this.primaryColor = '#2962FF',
     this.secondaryColor = '#26A69A',
     this.accentColor = '#FFCA28',
@@ -20,6 +22,7 @@ class BrandingPreferences {
 
   Map<String, dynamic> toMap() => {
         'clinicName': clinicName,
+        'logoUrl': logoUrl,
         'primaryColor': primaryColor,
         'secondaryColor': secondaryColor,
         'accentColor': accentColor,
@@ -30,6 +33,7 @@ class BrandingPreferences {
   factory BrandingPreferences.fromMap(Map<String, dynamic> map) =>
       BrandingPreferences(
         clinicName: map['clinicName'] ?? 'Kelyn Physio',
+        logoUrl: map['logoUrl'] ?? '',
         primaryColor: map['primaryColor'] ?? '#2962FF',
         secondaryColor: map['secondaryColor'] ?? '#26A69A',
         accentColor: map['accentColor'] ?? '#FFCA28',

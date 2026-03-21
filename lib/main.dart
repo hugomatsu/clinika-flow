@@ -1,12 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'app.dart';
 import 'firebase_options.dart';
 import 'services/theme_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Use path-based URLs on web (no /#/ prefix) so /anamnesis/:token works
+  usePathUrlStrategy();
 
   try {
     await Firebase.initializeApp(

@@ -203,5 +203,29 @@
       "pre": { "type": "int" },
       "post": { "type": "int" }
     }
-  }
+  },
+  "fieldLibrary": "Field library",
+  "searchFields": "Search fields...",
+  "customField": "Custom field",
+  "popular": "Popular",
+
+  "sendAnamnesis": "Send anamnesis",
+  "anamnesisSent": "Anamnesis link created!",
+  "anamnesisStatusPending": "Waiting for patient to fill",
+  "anamnesisStatusOpened": "Patient opened the form",
+  "anamnesisStatusCompleted": "Anamnesis completed",
+  "anamnesisExpired": "This link has expired",
+  "anamnesisInvalidLink": "Invalid or expired link",
+  "anamnesisSubmitted": "Anamnesis submitted successfully!",
+  "anamnesisSubmittedDesc": "Your answers have been saved. You may close this page.",
+  "anamnesisFormTitle": "Anamnesis",
+  "submitAnamnesis": "Submit",
+  "anamnesisLinkCopied": "Link copied!",
+  "shareAnamnesis": "Share link",
+  "resendAnamnesis": "Resend link",
+  "copyLink": "Copy link",
+  "anamnesisReadOnly": "This anamnesis has already been submitted.",
+  "clinicLogo": "Clinic logo",
+  "removeLogo": "Remove logo",
+  "tapToAddLogo": "Tap to add logo"
 }

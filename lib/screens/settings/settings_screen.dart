@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/branding_preferences.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
+import '../../services/image_service.dart';
 import '../../services/theme_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -219,6 +221,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     confirmCtrl.dispose();
   }
 
+  Future<void> _pickLogo(ImageSource source) async {
+    final url = await ImageService.pickAndUploadLogo(source: source);
+    if (url != null && mounted) {
+      setState(() => _prefs.logoUrl = url);
+    }
+  }
+
+  void _showLogoSourceSheet(AppLocalizations loc) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(loc.camera),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickLogo(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(loc.gallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickLogo(ImageSource.gallery);
+              },
+            ),
+            if (_prefs.logoUrl.isNotEmpty)
+              ListTile(
+                leading: Icon(Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error),
+                title: Text(loc.removeLogo,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _prefs.logoUrl = '');
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _resetDefaults() {
     setState(() {
       _prefs = BrandingPreferences();
@@ -288,6 +338,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         prefixIcon: const Icon(Icons.local_hospital_outlined),
                         border: const OutlineInputBorder(),
                       ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Clinic logo ──────────────────────────────────────────────
+                _sectionHeader(context, Icons.image_outlined, loc.clinicLogo),
+                const SizedBox(height: 8),
+                Card(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => _showLogoSourceSheet(loc),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _prefs.logoUrl.isEmpty
+                          ? Row(
+                              children: [
+                                Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(Icons.add_photo_alternate,
+                                      size: 32,
+                                      color: colorScheme.onSurfaceVariant),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(loc.tapToAddLogo,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                              color: colorScheme
+                                                  .onSurfaceVariant)),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    _prefs.logoUrl,
+                                    width: 64,
+                                    height: 64,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 64,
+                                      height: 64,
+                                      color:
+                                          colorScheme.surfaceContainerHighest,
+                                      child: const Icon(Icons.broken_image),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(loc.clinicLogo,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.edit,
+                                      color: colorScheme.primary),
+                                  onPressed: () =>
+                                      _showLogoSourceSheet(loc),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 ),

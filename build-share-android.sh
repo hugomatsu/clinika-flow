@@ -49,7 +49,8 @@ echo "Version: ${VERSION_NAME}+${NEW_BUILD}"
 # ─── Build APK ───────────────────────────────────────────────────────────────
 echo "Building release APK..."
 
-# Resolve dependencies first to ensure correct Flutter SDK is used
+# Full clean to avoid stale caches pointing to wrong Flutter SDK
+flutter clean
 flutter pub get
 
 flutter build apk --release

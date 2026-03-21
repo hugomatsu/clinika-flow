@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
+import '../../models/anamnesis_request.dart';
 import '../../models/patient.dart';
 import '../../models/appointment.dart';
 import '../../models/session_record.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
+import '../../services/image_service.dart';
 import 'patient_form_screen.dart';
 import '../appointments/appointment_form_screen.dart';
 import '../sessions/session_record_screen.dart';
@@ -23,6 +28,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   List<Appointment> _appointments = [];
   List<SessionRecord> _sessions = [];
   List<SessionTemplate> _templates = [];
+  AnamnesisRequest? _anamnesisRequest;
   bool _loading = true;
 
   @override
@@ -50,12 +56,34 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         debugPrint('Failed to load appointments/sessions: $e');
       }
 
+      AnamnesisRequest? anamnesisReq;
+      try {
+        anamnesisReq = await FirestoreService.getActiveAnamnesisRequest(
+            widget.patientId);
+
+        // Copy completed external anamnesis response to the patient document.
+        if (anamnesisReq != null &&
+            anamnesisReq.status == AnamnesisRequestStatus.completed &&
+            anamnesisReq.responseData.isNotEmpty &&
+            patient != null &&
+            patient.anamnesisData.isEmpty) {
+          patient.anamnesisTemplateId = anamnesisReq.templateId;
+          patient.anamnesisTemplateVersion = anamnesisReq.templateVersion;
+          patient.anamnesisData =
+              Map<String, dynamic>.from(anamnesisReq.responseData);
+          await FirestoreService.updatePatient(patient);
+        }
+      } catch (e) {
+        debugPrint('Failed to load anamnesis request: $e');
+      }
+
       if (mounted) {
         setState(() {
           _patient = patient;
           _appointments = appointments;
           _sessions = patientSessions;
           _templates = templates;
+          _anamnesisRequest = anamnesisReq;
           _loading = false;
         });
       }
@@ -225,6 +253,108 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     }
   }
 
+  Future<void> _sendAnamnesis(Patient p) async {
+    final loc = AppLocalizations.of(context)!;
+
+    // Pick template
+    String? tmplId;
+    if (_templates.isEmpty) return;
+
+    if (_templates.length == 1) {
+      tmplId = _templates.first.id;
+    } else {
+      tmplId = await showModalBottomSheet<String>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(loc.selectTemplate,
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              ..._templates.map((t) => ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(t.name),
+                    subtitle: t.description.isNotEmpty
+                        ? Text(t.description,
+                            maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, t.id),
+                  )),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (tmplId == null || !mounted) return;
+
+    final tmpl = await FirestoreService.getTemplateById(tmplId);
+    if (tmpl == null || !mounted) return;
+
+    // Fetch branding for clinic name + logo
+    final branding = await FirestoreService.getBranding();
+
+    final request = AnamnesisRequest(
+      patientId: p.id,
+      patientName: p.fullName,
+      clinicName: branding?.clinicName ?? '',
+      clinicLogoUrl: branding?.logoUrl ?? '',
+      templateId: tmpl.id,
+      templateVersion: tmpl.currentVersion,
+      fieldsSnapshot: tmpl.fields.map((f) => f.copyWith()).toList(),
+    );
+
+    final created = await FirestoreService.createAnamnesisRequest(request);
+
+    if (!mounted) return;
+
+    final link = 'https://clinika-flow.web.app/anamnesis/${created.id}';
+
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.link, size: 48, color: Theme.of(ctx).colorScheme.primary),
+              const SizedBox(height: 16),
+              Text(loc.anamnesisSent,
+                  style: Theme.of(ctx).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              SelectableText(link,
+                  style: TextStyle(
+                      color: Theme.of(ctx).colorScheme.primary,
+                      fontSize: 13)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: link));
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                            SnackBar(content: Text(loc.anamnesisLinkCopied)));
+                      },
+                      icon: const Icon(Icons.copy),
+                      label: Text(loc.copyLink),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    _load();
+  }
+
   String _appointmentStatusLabel(AppointmentStatus s, AppLocalizations loc) {
     switch (s) {
       case AppointmentStatus.scheduled:
@@ -357,12 +487,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               ),
             ),
 
-            // Anamnesis section (legacy text + template-based)
-            const SizedBox(height: 12),
+            // ── Anamnesis section ──
+            const SizedBox(height: 16),
             _buildAnamnesisSection(p, loc, colorScheme),
 
-            const SizedBox(height: 12),
-            // Stats row
+            // ── Stats & Activity section ──
+            const SizedBox(height: 24),
+            Text(loc.sessionHistoryTitle,
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -386,7 +519,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
 
             // Sessions history
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildSessionsHistory(loc, colorScheme),
 
             // Appointments
@@ -407,22 +540,42 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     final hasLegacy =
         p.posturalAnamnesis.isNotEmpty || p.injuryHistory.isNotEmpty;
     final hasTemplate = p.anamnesisData.isNotEmpty;
+    final req = _anamnesisRequest;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(loc.anamnesis,
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+
+        // Action buttons row — send externally + fill in-app
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(loc.anamnesis,
-                style: Theme.of(context).textTheme.titleMedium),
-            TextButton.icon(
-              icon: Icon(hasTemplate ? Icons.edit : Icons.add, size: 18),
-              label: Text(hasTemplate ? loc.editAnamnesis : loc.fillAnamnesis),
-              onPressed: () => _openAnamnesis(p),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _sendAnamnesis(p),
+                icon: const Icon(Icons.send, size: 18),
+                label: Text(loc.sendAnamnesis, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => _openAnamnesis(p),
+                icon: Icon(hasTemplate ? Icons.edit : Icons.add, size: 18),
+                label: Text(
+                    hasTemplate ? loc.editAnamnesis : loc.fillAnamnesis,
+                    overflow: TextOverflow.ellipsis),
+              ),
             ),
           ],
         ),
+        const SizedBox(height: 8),
+
+        // External anamnesis request status card
+        if (req != null) _buildExternalAnamnesisCard(req, loc, colorScheme),
+
         // Legacy text fields
         if (hasLegacy)
           Card(
@@ -462,18 +615,61 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               onTap: () => _openAnamnesis(p),
             ),
           ),
-        if (!hasLegacy && !hasTemplate)
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.assignment_outlined,
-                  color: colorScheme.onSurface.withValues(alpha: 0.4)),
-              title: Text(loc.fillAnamnesis,
-                  style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.5))),
-              onTap: () => _openAnamnesis(p),
-            ),
-          ),
       ],
+    );
+  }
+
+  Widget _buildExternalAnamnesisCard(
+      AnamnesisRequest req, AppLocalizations loc, ColorScheme colorScheme) {
+    final IconData icon;
+    final String label;
+    final Color color;
+
+    switch (req.status) {
+      case AnamnesisRequestStatus.pending:
+        icon = Icons.hourglass_empty;
+        label = loc.anamnesisStatusPending;
+        color = Colors.amber.shade700;
+      case AnamnesisRequestStatus.opened:
+        icon = Icons.visibility;
+        label = loc.anamnesisStatusOpened;
+        color = Colors.blue.shade700;
+      case AnamnesisRequestStatus.completed:
+        icon = Icons.check_circle;
+        label = loc.anamnesisStatusCompleted;
+        color = Colors.green.shade700;
+    }
+
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(label),
+        subtitle: req.status == AnamnesisRequestStatus.completed
+            ? null
+            : Text(
+                'https://clinika-flow.web.app/anamnesis/${req.id}',
+                style: TextStyle(fontSize: 11, color: colorScheme.primary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+        trailing: req.status != AnamnesisRequestStatus.completed
+            ? IconButton(
+                icon: const Icon(Icons.copy, size: 20),
+                tooltip: loc.copyLink,
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(
+                      text:
+                          'https://clinika-flow.web.app/anamnesis/${req.id}'));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(loc.anamnesisLinkCopied)));
+                },
+              )
+            : Icon(Icons.chevron_right,
+                color: colorScheme.onSurface.withValues(alpha: 0.3)),
+        onTap: req.status == AnamnesisRequestStatus.completed
+            ? () => _openAnamnesis(_patient!)
+            : null,
+      ),
     );
   }
 
@@ -483,9 +679,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(loc.sessionHistoryTitle,
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
         if (_sessions.isEmpty)
           Text(loc.noSessions,
               style: TextStyle(
@@ -510,15 +703,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                         style: const TextStyle(fontSize: 11)),
                   ],
                 ),
-                title: Text(loc.painScore(
-                    s.prePainScore, s.postPainScore)),
+                title: Text(DateFormat('dd/MM/yyyy – HH:mm',
+                        Localizations.localeOf(context).toString())
+                    .format(date)),
                 subtitle: s.observations.isNotEmpty
                     ? Text(s.observations,
                         maxLines: 2, overflow: TextOverflow.ellipsis)
-                    : s.techniques.isNotEmpty
-                        ? Text(s.techniques.join(', '),
-                            maxLines: 1, overflow: TextOverflow.ellipsis)
-                        : null,
+                    : null,
                 trailing: Icon(Icons.chevron_right,
                     color: colorScheme.onSurface.withValues(alpha: 0.3)),
                 onTap: () {
@@ -947,18 +1138,173 @@ class _AnamnesisFormScreenState extends State<_AnamnesisFormScreen> {
         );
 
       case FieldType.image:
+        return _buildImage(field, colorScheme);
+
       case FieldType.subTemplate:
         return Card(
           child: ListTile(
-            leading: Icon(
-              field.type == FieldType.image
-                  ? Icons.image_outlined
-                  : Icons.article_outlined,
-              color: colorScheme.primary,
-            ),
+            leading: Icon(Icons.article_outlined, color: colorScheme.primary),
             title: Text(field.label),
           ),
         );
     }
+  }
+
+  Widget _buildImage(FieldDefinition field, ColorScheme colorScheme) {
+    final hint = field.config['hint'] ?? '';
+    final loc = AppLocalizations.of(context)!;
+    final urls = List<String>.from(
+        (_values[field.guid] ?? <String>[]) as List);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label,
+                style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            if (urls.isNotEmpty) ...[
+              SizedBox(
+                height: 120,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: urls.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) => Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () => _showFullImage(urls[i]),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            urls[i],
+                            height: 120,
+                            width: 120,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 120,
+                              width: 120,
+                              color: colorScheme.surfaceContainerHighest,
+                              child: const Icon(Icons.broken_image_outlined),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              urls.removeAt(i);
+                              _values[field.guid] = urls;
+                            });
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            child: const Icon(Icons.close,
+                                size: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showImageSourceSheet(field, loc),
+                icon: const Icon(Icons.add_a_photo_outlined),
+                label: Text(loc.addPhoto),
+              ),
+            ),
+            if (urls.isEmpty && hint.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(hint,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5))),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFullImage(String url) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image, color: Colors.white54, size: 64)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(FieldDefinition field, ImageSource source) async {
+    final url = await ImageService.pickAndUpload(source: source);
+    if (url != null && mounted) {
+      setState(() {
+        final urls = List<String>.from(
+            (_values[field.guid] ?? <String>[]) as List);
+        urls.add(url);
+        _values[field.guid] = urls;
+      });
+    }
+  }
+
+  void _showImageSourceSheet(FieldDefinition field, AppLocalizations loc) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(loc.camera),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImage(field, ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(loc.gallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImage(field, ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/anamnesis_request.dart';
 import '../models/appointment.dart';
 import '../models/branding_preferences.dart';
 import '../models/financial_record.dart';
@@ -241,6 +242,62 @@ class FirestoreService {
       await v.reference.delete();
     }
     await _templates.doc(id).delete();
+  }
+
+  // ── AnamnesisRequest ─────────────────────────────────────────────────────
+  // Top-level collection so unauthenticated patients can access by token.
+
+  static CollectionReference<Map<String, dynamic>> get _anamnesisRequests =>
+      _db.collection('anamnesisRequests');
+
+  static Future<AnamnesisRequest> createAnamnesisRequest(
+      AnamnesisRequest request) async {
+    final ref = _anamnesisRequests.doc();
+    request.id = ref.id;
+    request.clinicId = _clinicId;
+    request.createdAt = DateTime.now();
+    await ref.set(request.toMap());
+    return request;
+  }
+
+  /// Fetch by token (document ID) — no auth required.
+  static Future<AnamnesisRequest?> getAnamnesisRequestByToken(
+      String token) async {
+    final doc = await _anamnesisRequests.doc(token).get();
+    if (!doc.exists || doc.data() == null) return null;
+    return AnamnesisRequest.fromMap(doc.id, doc.data()!);
+  }
+
+  /// Get the active request for a patient (most recent non-completed).
+  static Future<AnamnesisRequest?> getActiveAnamnesisRequest(
+      String patientId) async {
+    final snap = await _anamnesisRequests
+        .where('clinicId', isEqualTo: _clinicId)
+        .where('patientId', isEqualTo: patientId)
+        .get();
+    final list = snap.docs
+        .map((d) => AnamnesisRequest.fromMap(d.id, d.data()))
+        .toList();
+    // Return most recent that isn't expired
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list.isNotEmpty ? list.first : null;
+  }
+
+  /// Update status (e.g. pending → opened → completed).
+  static Future<void> updateAnamnesisRequestStatus(
+    String token, {
+    required AnamnesisRequestStatus status,
+    Map<String, dynamic>? responseData,
+  }) async {
+    final data = <String, dynamic>{'status': status.name};
+    if (status == AnamnesisRequestStatus.opened) {
+      data['openedAt'] = Timestamp.fromDate(DateTime.now());
+    }
+    if (status == AnamnesisRequestStatus.completed) {
+      data['completedAt'] = Timestamp.fromDate(DateTime.now());
+      if (responseData != null) data['responseData'] = responseData;
+    }
+    await _anamnesisRequests.doc(token).update(data);
   }
 
   // ── BrandingPreferences ───────────────────────────────────────────────────

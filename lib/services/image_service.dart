@@ -32,6 +32,21 @@ class ImageService {
     return ref.getDownloadURL();
   }
 
+  /// Pick, compress, and upload clinic logo. Returns download URL or null.
+  static Future<String?> pickAndUploadLogo({
+    required ImageSource source,
+  }) async {
+    final picked = await _picker.pickImage(source: source);
+    if (picked == null) return null;
+
+    final bytes = await picked.readAsBytes();
+    final compressed = await _compressImage(bytes, 512, 80);
+
+    final ref = _storage.ref('clinics/$_clinicId/logo.jpg');
+    await ref.putData(compressed, SettableMetadata(contentType: 'image/jpeg'));
+    return ref.getDownloadURL();
+  }
+
   /// Decode, resize (if needed), and re-encode as JPEG.
   static Future<Uint8List> _compressImage(
       Uint8List bytes, int maxDimension, int quality) async {
