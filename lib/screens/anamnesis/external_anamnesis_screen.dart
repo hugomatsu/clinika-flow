@@ -467,6 +467,28 @@ class _ExternalAnamnesisScreenState extends State<ExternalAnamnesisScreen> {
           ),
         );
 
+      case FieldType.currency:
+        final prefix = field.config['prefix'] ?? 'R\$';
+        final val = (_values[field.guid]?.toString()) ?? '';
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: TextEditingController(text: val),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: field.label,
+                prefixText: '$prefix ',
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (v) {
+                final parsed = double.tryParse(v.replaceAll(',', '.'));
+                _values[field.guid] = parsed ?? 0.0;
+              },
+            ),
+          ),
+        );
+
       case FieldType.image:
         // Image capture not supported on external web form
         return const SizedBox.shrink();

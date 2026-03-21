@@ -11,6 +11,7 @@ enum FieldType {
   checkbox,
   subTemplate,
   toggle,
+  currency,
 }
 
 /// A single field inside a template, identified by a stable GUID.
@@ -53,6 +54,8 @@ class FieldDefinition {
         return {'templateId': '', 'displayMode': 'page'};
       case FieldType.toggle:
         return {'defaultValue': false};
+      case FieldType.currency:
+        return {'prefix': 'R\$'};
     }
   }
 
@@ -140,8 +143,6 @@ class SessionTemplate {
   String description;
   int currentVersion;
   DateTime lastSavedAt;
-  bool isDefault;
-  bool isBuiltIn;
   List<FieldDefinition> fields;
   DateTime createdAt;
 
@@ -151,8 +152,6 @@ class SessionTemplate {
     this.description = '',
     this.currentVersion = 1,
     DateTime? lastSavedAt,
-    this.isDefault = false,
-    this.isBuiltIn = false,
     List<FieldDefinition>? fields,
     DateTime? createdAt,
   })  : lastSavedAt = lastSavedAt ?? DateTime.now(),
@@ -164,8 +163,6 @@ class SessionTemplate {
         'description': description,
         'currentVersion': currentVersion,
         'lastSavedAt': Timestamp.fromDate(lastSavedAt),
-        'isDefault': isDefault,
-        'isBuiltIn': isBuiltIn,
         'fields': fields.map((f) => f.toMap()).toList(),
         'createdAt': Timestamp.fromDate(createdAt),
       };
@@ -177,8 +174,6 @@ class SessionTemplate {
         description: map['description'] ?? '',
         currentVersion: map['currentVersion'] ?? 1,
         lastSavedAt: (map['lastSavedAt'] as Timestamp?)?.toDate(),
-        isDefault: map['isDefault'] ?? false,
-        isBuiltIn: map['isBuiltIn'] ?? false,
         fields: (map['fields'] as List<dynamic>?)
                 ?.map((e) =>
                     FieldDefinition.fromMap(Map<String, dynamic>.from(e)))

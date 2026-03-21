@@ -1145,13 +1145,13 @@ abstract class AppLocalizations {
   /// No description provided for @fillAnamnesis.
   ///
   /// In pt, this message translates to:
-  /// **'Preencher anamnese'**
+  /// **'Preencher'**
   String get fillAnamnesis;
 
   /// No description provided for @editAnamnesis.
   ///
   /// In pt, this message translates to:
-  /// **'Editar anamnese'**
+  /// **'Editar'**
   String get editAnamnesis;
 
   /// No description provided for @anamnesisSaved.
@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @sendAnamnesis.
   ///
   /// In pt, this message translates to:
-  /// **'Enviar anamnese'**
+  /// **'Enviar'**
   String get sendAnamnesis;
 
   /// No description provided for @anamnesisSent.
@@ -1315,6 +1315,114 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Toque para adicionar o logo'**
   String get tapToAddLogo;
+
+  /// No description provided for @fieldCurrency.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor (R\$)'**
+  String get fieldCurrency;
+
+  /// No description provided for @whatsapp.
+  ///
+  /// In pt, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsapp;
+
+  /// No description provided for @instagram.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instagram'**
+  String get instagram;
+
+  /// No description provided for @settingsShort.
+  ///
+  /// In pt, this message translates to:
+  /// **'Config.'**
+  String get settingsShort;
+
+  /// No description provided for @defaultSessionModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo padrão de sessão'**
+  String get defaultSessionModel;
+
+  /// No description provided for @defaultAnamnesisModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo padrão de anamnese'**
+  String get defaultAnamnesisModel;
+
+  /// No description provided for @none.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum'**
+  String get none;
+
+  /// No description provided for @spentTime.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tempo gasto (min)'**
+  String get spentTime;
+
+  /// No description provided for @sessionNotes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anotações'**
+  String get sessionNotes;
+
+  /// No description provided for @paidPrice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor pago'**
+  String get paidPrice;
+
+  /// No description provided for @monthly.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mensal'**
+  String get monthly;
+
+  /// No description provided for @annual.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anual'**
+  String get annual;
+
+  /// No description provided for @newPatients.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novos pacientes'**
+  String get newPatients;
+
+  /// No description provided for @recurringPatients.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pacientes recorrentes'**
+  String get recurringPatients;
+
+  /// No description provided for @totalReceived.
+  ///
+  /// In pt, this message translates to:
+  /// **'Total recebido'**
+  String get totalReceived;
+
+  /// No description provided for @bestWeek.
+  ///
+  /// In pt, this message translates to:
+  /// **'Melhor semana'**
+  String get bestWeek;
+
+  /// No description provided for @bestWeekSessions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Melhor semana (sessões)'**
+  String get bestWeekSessions;
+
+  /// No description provided for @finance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Financeiro'**
+  String get finance;
 }
 
 class _AppLocalizationsDelegate

@@ -63,19 +63,6 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     _load();
   }
 
-  Future<void> _setDefault(SessionTemplate template) async {
-    // Un-default all others
-    for (final t in _templates) {
-      if (t.isDefault && t.id != template.id) {
-        t.isDefault = false;
-        await FirestoreService.updateTemplate(t);
-      }
-    }
-    template.isDefault = true;
-    await FirestoreService.updateTemplate(template);
-    _load();
-  }
-
   Future<void> _delete(SessionTemplate template) async {
     final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -156,47 +143,8 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
           child: Icon(Icons.description_outlined,
               color: colorScheme.onPrimaryContainer),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(t.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-            ),
-            if (t.isDefault)
-              Container(
-                margin: const EdgeInsets.only(left: 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  loc.defaultTemplate,
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary),
-                ),
-              ),
-            if (t.isBuiltIn)
-              Container(
-                margin: const EdgeInsets.only(left: 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  loc.builtIn,
-                  style: TextStyle(
-                      fontSize: 10,
-                      color: colorScheme.onSecondaryContainer),
-                ),
-              ),
-          ],
-        ),
+        title: Text(t.name,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
           '${loc.versionLabel(t.currentVersion)} · ${loc.fieldCount(t.fields.length)}',
           style: TextStyle(
@@ -210,8 +158,6 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
                 _edit(t);
               case 'duplicate':
                 _duplicate(t);
-              case 'default':
-                _setDefault(t);
               case 'delete':
                 _delete(t);
             }
@@ -219,11 +165,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
           itemBuilder: (_) => [
             PopupMenuItem(value: 'edit', child: Text(loc.edit)),
             PopupMenuItem(value: 'duplicate', child: Text(loc.duplicate)),
-            if (!t.isDefault)
-              PopupMenuItem(
-                  value: 'default', child: Text(loc.setAsDefault)),
-            if (!t.isBuiltIn)
-              PopupMenuItem(value: 'delete', child: Text(loc.delete)),
+            PopupMenuItem(value: 'delete', child: Text(loc.delete)),
           ],
         ),
         onTap: () => _edit(t),

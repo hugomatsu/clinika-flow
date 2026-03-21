@@ -215,14 +215,6 @@ class FirestoreService {
     return SessionTemplate.fromMap(doc.id, doc.data()!);
   }
 
-  static Future<SessionTemplate?> getDefaultTemplate() async {
-    final snap =
-        await _templates.where('isDefault', isEqualTo: true).limit(1).get();
-    if (snap.docs.isEmpty) return null;
-    final d = snap.docs.first;
-    return SessionTemplate.fromMap(d.id, d.data());
-  }
-
   static Future<TemplateVersion?> getTemplateVersion(
       String templateId, int version) async {
     final doc = await _templates

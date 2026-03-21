@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/anamnesis_request.dart';
 import '../../models/patient.dart';
 import '../../models/appointment.dart';
-import '../../models/session_record.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
 import '../../services/image_service.dart';
@@ -26,7 +25,6 @@ class PatientDetailScreen extends StatefulWidget {
 class _PatientDetailScreenState extends State<PatientDetailScreen> {
   Patient? _patient;
   List<Appointment> _appointments = [];
-  List<SessionRecord> _sessions = [];
   List<SessionTemplate> _templates = [];
   AnamnesisRequest? _anamnesisRequest;
   bool _loading = true;
@@ -42,15 +40,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       final patient = await FirestoreService.getPatientById(widget.patientId);
 
       List<Appointment> appointments = [];
-      List<SessionRecord> patientSessions = [];
       List<SessionTemplate> templates = [];
       try {
         appointments =
             await FirestoreService.getAppointmentsByPatient(widget.patientId);
-        final sessions = await FirestoreService.getAllSessions();
-        final apptIds = appointments.map((a) => a.id).toSet();
-        patientSessions =
-            sessions.where((s) => apptIds.contains(s.appointmentId)).toList();
         templates = await FirestoreService.getAllTemplates();
       } catch (e) {
         debugPrint('Failed to load appointments/sessions: $e');
@@ -81,7 +74,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         setState(() {
           _patient = patient;
           _appointments = appointments;
-          _sessions = patientSessions;
           _templates = templates;
           _anamnesisRequest = anamnesisReq;
           _loading = false;
@@ -256,11 +248,17 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   Future<void> _sendAnamnesis(Patient p) async {
     final loc = AppLocalizations.of(context)!;
 
-    // Pick template
+    // Pick template — use branding default if set
     String? tmplId;
     if (_templates.isEmpty) return;
 
-    if (_templates.length == 1) {
+    // Fetch branding for default template + clinic name/logo
+    final branding = await FirestoreService.getBranding();
+    final brandingDefault = branding?.defaultAnamnesisTemplateId ?? '';
+    if (brandingDefault.isNotEmpty &&
+        _templates.any((t) => t.id == brandingDefault)) {
+      tmplId = brandingDefault;
+    } else if (_templates.length == 1) {
       tmplId = _templates.first.id;
     } else {
       tmplId = await showModalBottomSheet<String>(
@@ -293,9 +291,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
     final tmpl = await FirestoreService.getTemplateById(tmplId);
     if (tmpl == null || !mounted) return;
-
-    // Fetch branding for clinic name + logo
-    final branding = await FirestoreService.getBranding();
 
     final request = AnamnesisRequest(
       patientId: p.id,
@@ -452,8 +447,43 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _infoRow(Icons.phone, loc.phone,
-                        p.phone.isNotEmpty ? p.phone : loc.notInformed),
+                    _infoRowWithAction(
+                      Icons.chat_outlined,
+                      loc.whatsapp,
+                      p.whatsapp.isNotEmpty ? p.whatsapp : loc.notInformed,
+                      p.whatsapp.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.send, size: 20),
+                              color: const Color(0xFF25D366),
+                              onPressed: () {
+                                final number = p.whatsapp
+                                    .replaceAll(RegExp(r'[^\d+]'), '');
+                                launchUrl(Uri.parse(
+                                    'https://wa.me/$number'));
+                              },
+                            )
+                          : null,
+                    ),
+                    const Divider(height: 24),
+                    _infoRowWithAction(
+                      Icons.camera_alt_outlined,
+                      loc.instagram,
+                      p.instagram.isNotEmpty
+                          ? p.instagram
+                          : loc.notInformed,
+                      p.instagram.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.open_in_new, size: 20),
+                              color: const Color(0xFFE1306C),
+                              onPressed: () {
+                                final handle = p.instagram
+                                    .replaceAll('@', '');
+                                launchUrl(Uri.parse(
+                                    'https://instagram.com/$handle'));
+                              },
+                            )
+                          : null,
+                    ),
                     const Divider(height: 24),
                     _infoRow(Icons.email, loc.email,
                         p.email.isNotEmpty ? p.email : loc.notInformed),
@@ -491,38 +521,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             const SizedBox(height: 16),
             _buildAnamnesisSection(p, loc, colorScheme),
 
-            // ── Stats & Activity section ──
-            const SizedBox(height: 24),
-            Text(loc.sessionHistoryTitle,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _statCard(
-                    context,
-                    label: loc.sessions,
-                    value: '${_sessions.length}',
-                    icon: Icons.history,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _statCard(
-                    context,
-                    label: loc.appointments,
-                    value: '${_appointments.length}',
-                    icon: Icons.calendar_today,
-                  ),
-                ),
-              ],
-            ),
-
-            // Sessions history
-            const SizedBox(height: 12),
-            _buildSessionsHistory(loc, colorScheme),
-
-            // Appointments
+            // ── Appointments section ──
             const SizedBox(height: 16),
             _buildAppointmentsSection(p, loc, colorScheme),
 
@@ -673,69 +672,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
   }
 
-  // ── Sessions history ──────────────────────────────────────────────────────
-
-  Widget _buildSessionsHistory(AppLocalizations loc, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_sessions.isEmpty)
-          Text(loc.noSessions,
-              style: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.5)))
-        else
-          ..._sessions.map((s) {
-            final date = s.sessionDateTime;
-            return Card(
-              child: ListTile(
-                leading: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      date.day.toString().padLeft(2, '0'),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    Text(_monthAbbr(date.month),
-                        style: const TextStyle(fontSize: 11)),
-                  ],
-                ),
-                title: Text(DateFormat('dd/MM/yyyy – HH:mm',
-                        Localizations.localeOf(context).toString())
-                    .format(date)),
-                subtitle: s.observations.isNotEmpty
-                    ? Text(s.observations,
-                        maxLines: 2, overflow: TextOverflow.ellipsis)
-                    : null,
-                trailing: Icon(Icons.chevron_right,
-                    color: colorScheme.onSurface.withValues(alpha: 0.3)),
-                onTap: () {
-                  // Find the appointment for this session
-                  final appt = _appointments
-                      .where((a) => a.id == s.appointmentId)
-                      .toList();
-                  if (appt.isNotEmpty && _patient != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SessionRecordScreen(
-                          appointment: appt.first,
-                          patient: _patient!,
-                        ),
-                      ),
-                    ).then((_) => _load());
-                  }
-                },
-              ),
-            );
-          }),
-      ],
-    );
-  }
-
   // ── Appointments section ──────────────────────────────────────────────────
 
   Widget _buildAppointmentsSection(
@@ -814,6 +750,32 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   // ── Shared helpers ────────────────────────────────────────────────────────
 
+  Widget _infoRowWithAction(
+      IconData icon, String label, String value, Widget? action) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6))),
+              Text(value),
+            ],
+          ),
+        ),
+        if (action != null) action,
+      ],
+    );
+  }
+
   Widget _infoRow(IconData icon, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -838,36 +800,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
   }
 
-  Widget _statCard(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      color: colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon, color: colorScheme.onPrimaryContainer),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12, color: colorScheme.onPrimaryContainer)),
-          ],
-        ),
-      ),
-    );
-  }
 
   String _monthAbbr(int month) {
     const abbr = [
@@ -884,11 +816,13 @@ class _AnamnesisFormScreen extends StatefulWidget {
   final SessionTemplate template;
   final Map<String, dynamic> initialValues;
   final String patientName;
+  final bool viewMode;
 
   const _AnamnesisFormScreen({
     required this.template,
     required this.initialValues,
     required this.patientName,
+    this.viewMode = false,
   });
 
   @override
@@ -1134,6 +1068,29 @@ class _AnamnesisFormScreenState extends State<_AnamnesisFormScreen> {
                 style: Theme.of(context).textTheme.titleSmall),
             value: val,
             onChanged: (v) => setState(() => _values[field.guid] = v),
+          ),
+        );
+
+      case FieldType.currency:
+        final prefix = field.config['prefix'] ?? 'R\$';
+        final val = (_values[field.guid]?.toString()) ?? '';
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: TextEditingController(text: val),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              readOnly: widget.viewMode,
+              decoration: InputDecoration(
+                labelText: field.label,
+                prefixText: '$prefix ',
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: widget.viewMode ? null : (v) {
+                final parsed = double.tryParse(v.replaceAll(',', '.'));
+                setState(() => _values[field.guid] = parsed ?? 0.0);
+              },
+            ),
           ),
         );
 

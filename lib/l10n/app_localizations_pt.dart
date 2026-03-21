@@ -540,10 +540,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get anamnesis => 'Anamnese';
 
   @override
-  String get fillAnamnesis => 'Preencher anamnese';
+  String get fillAnamnesis => 'Preencher';
 
   @override
-  String get editAnamnesis => 'Editar anamnese';
+  String get editAnamnesis => 'Editar';
 
   @override
   String get anamnesisSaved => 'Anamnese salva com sucesso!';
@@ -572,7 +572,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get popular => 'Popular';
 
   @override
-  String get sendAnamnesis => 'Enviar anamnese';
+  String get sendAnamnesis => 'Enviar';
 
   @override
   String get anamnesisSent => 'Link de anamnese criado!';
@@ -628,4 +628,58 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get tapToAddLogo => 'Toque para adicionar o logo';
+
+  @override
+  String get fieldCurrency => 'Valor (R\$)';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get instagram => 'Instagram';
+
+  @override
+  String get settingsShort => 'Config.';
+
+  @override
+  String get defaultSessionModel => 'Modelo padrão de sessão';
+
+  @override
+  String get defaultAnamnesisModel => 'Modelo padrão de anamnese';
+
+  @override
+  String get none => 'Nenhum';
+
+  @override
+  String get spentTime => 'Tempo gasto (min)';
+
+  @override
+  String get sessionNotes => 'Anotações';
+
+  @override
+  String get paidPrice => 'Valor pago';
+
+  @override
+  String get monthly => 'Mensal';
+
+  @override
+  String get annual => 'Anual';
+
+  @override
+  String get newPatients => 'Novos pacientes';
+
+  @override
+  String get recurringPatients => 'Pacientes recorrentes';
+
+  @override
+  String get totalReceived => 'Total recebido';
+
+  @override
+  String get bestWeek => 'Melhor semana';
+
+  @override
+  String get bestWeekSessions => 'Melhor semana (sessões)';
+
+  @override
+  String get finance => 'Financeiro';
 }

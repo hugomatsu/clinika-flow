@@ -99,9 +99,15 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
           _fields = tmpl.fields;
         }
       } else if (_allTemplates.isNotEmpty) {
-        // Try loading the default template first, fall back to first available
-        tmpl = _allTemplates.firstWhere((t) => t.isDefault,
-            orElse: () => _allTemplates.first);
+        // Use branding default, then template-level default, then first
+        final branding = await FirestoreService.getBranding();
+        final brandingDefault = branding?.defaultSessionTemplateId ?? '';
+        if (brandingDefault.isNotEmpty) {
+          tmpl = _allTemplates
+              .where((t) => t.id == brandingDefault)
+              .firstOrNull;
+        }
+        tmpl ??= _allTemplates.first;
         _fields = tmpl.fields;
       }
       _template = tmpl;
@@ -335,6 +341,8 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
         return _buildSubTemplate(field, colorScheme);
       case FieldType.toggle:
         return _buildToggle(field);
+      case FieldType.currency:
+        return _buildCurrency(field);
     }
   }
 
@@ -728,6 +736,30 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
         onChanged: _viewMode
             ? null
             : (v) => setState(() => _values[field.guid] = v),
+      ),
+    );
+  }
+
+  Widget _buildCurrency(FieldDefinition field) {
+    final prefix = field.config['prefix'] ?? 'R\$';
+    final val = _values[field.guid]?.toString() ?? '';
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: TextField(
+          controller: TextEditingController(text: val),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          readOnly: _viewMode,
+          decoration: InputDecoration(
+            labelText: field.label,
+            prefixText: '$prefix ',
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (v) {
+            final parsed = double.tryParse(v.replaceAll(',', '.'));
+            _values[field.guid] = parsed ?? 0.0;
+          },
+        ),
       ),
     );
   }
@@ -1304,6 +1336,9 @@ class _SubTemplateFormScreenState extends State<_SubTemplateFormScreen> {
             title: Text(field.label),
           ),
         );
+
+      case FieldType.currency:
+        return const SizedBox.shrink();
     }
   }
 
@@ -1608,6 +1643,9 @@ class _SubFieldWidget extends StatelessWidget {
               color: colorScheme.primary),
           title: Text(field.label),
         );
+
+      case FieldType.currency:
+        return const SizedBox.shrink();
     }
   }
 }

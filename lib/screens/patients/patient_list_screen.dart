@@ -179,7 +179,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
                             subtitle: Text(
-                              p.phone.isNotEmpty ? p.phone : p.email,
+                              p.whatsapp.isNotEmpty ? p.whatsapp : p.email,
                             ),
                             trailing: Chip(
                               label: Text(

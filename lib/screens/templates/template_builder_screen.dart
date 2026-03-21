@@ -493,6 +493,18 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
 
       case FieldType.toggle:
         return [];
+
+      case FieldType.currency:
+        return [
+          TextField(
+            controller: TextEditingController(text: field.config['prefix'] ?? 'R\$'),
+            decoration: const InputDecoration(
+              labelText: 'Prefixo',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (v) => field.config['prefix'] = v,
+          ),
+        ];
     }
   }
 
@@ -817,6 +829,23 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
             trailing: const Icon(Icons.chevron_right),
           ),
         );
+
+      case FieldType.currency:
+        final prefix = field.config['prefix'] ?? 'R\$';
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              enabled: false,
+              decoration: InputDecoration(
+                labelText: field.label,
+                prefixText: '$prefix ',
+                border: const OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+        );
     }
   }
 
@@ -872,6 +901,8 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
         return loc.fieldSubTemplate;
       case FieldType.toggle:
         return loc.fieldToggle;
+      case FieldType.currency:
+        return loc.fieldCurrency;
     }
   }
 
@@ -895,6 +926,8 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
         return Icons.article_outlined;
       case FieldType.toggle:
         return Icons.toggle_on_outlined;
+      case FieldType.currency:
+        return Icons.attach_money;
     }
   }
 }

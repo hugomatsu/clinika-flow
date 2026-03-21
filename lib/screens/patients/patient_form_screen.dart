@@ -15,7 +15,8 @@ class PatientFormScreen extends StatefulWidget {
 class _PatientFormScreenState extends State<PatientFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
-  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _whatsappCtrl;
+  late final TextEditingController _instagramCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _occupationCtrl;
   late final TextEditingController _emergencyCtrl;
@@ -32,7 +33,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     super.initState();
     final p = widget.patient;
     _nameCtrl = TextEditingController(text: p?.fullName ?? '');
-    _phoneCtrl = TextEditingController(text: p?.phone ?? '');
+    _whatsappCtrl = TextEditingController(text: p?.whatsapp ?? '');
+    _instagramCtrl = TextEditingController(text: p?.instagram ?? '');
     _emailCtrl = TextEditingController(text: p?.email ?? '');
     _occupationCtrl = TextEditingController(text: p?.occupation ?? '');
     _emergencyCtrl = TextEditingController(text: p?.emergencyContact ?? '');
@@ -45,7 +47,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _phoneCtrl.dispose();
+    _whatsappCtrl.dispose();
+    _instagramCtrl.dispose();
     _emailCtrl.dispose();
     _occupationCtrl.dispose();
     _emergencyCtrl.dispose();
@@ -70,7 +73,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
     final patient = widget.patient ?? Patient();
     patient.fullName = _nameCtrl.text.trim();
-    patient.phone = _phoneCtrl.text.trim();
+    patient.whatsapp = _whatsappCtrl.text.trim();
+    patient.instagram = _instagramCtrl.text.trim();
     patient.email = _emailCtrl.text.trim();
     patient.occupation = _occupationCtrl.text.trim();
     patient.emergencyContact = _emergencyCtrl.text.trim();
@@ -143,10 +147,21 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  controller: _phoneCtrl,
+                  controller: _whatsappCtrl,
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
-                    labelText: loc.phone,
+                    labelText: loc.whatsapp,
+                    prefixIcon: const Icon(Icons.chat_outlined),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _instagramCtrl,
+                  decoration: InputDecoration(
+                    labelText: loc.instagram,
+                    prefixIcon: const Icon(Icons.camera_alt_outlined),
+                    hintText: '@usuario',
                     border: const OutlineInputBorder(),
                   ),
                 ),

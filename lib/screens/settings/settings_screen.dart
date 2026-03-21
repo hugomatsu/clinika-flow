@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/branding_preferences.dart';
+import '../../models/session_template.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../services/image_service.dart';
@@ -16,6 +17,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   BrandingPreferences _prefs = BrandingPreferences();
+  List<SessionTemplate> _templates = [];
   bool _loading = true;
   bool _saving = false;
   late TextEditingController _clinicNameCtrl;
@@ -69,9 +71,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _load() async {
     try {
       final prefs = await FirestoreService.getBranding();
+      final templates = await FirestoreService.getAllTemplates();
       if (mounted) {
         setState(() {
           _prefs = prefs ?? BrandingPreferences();
+          _templates = templates;
           _clinicNameCtrl.text = _prefs.clinicName;
           _loading = false;
         });
@@ -411,6 +415,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                               ],
                             ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Default models ───────────────────────────────────────────
+                _sectionHeader(
+                    context, Icons.description_outlined, loc.templates),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        DropdownButtonFormField<String>(
+                          value: _prefs.defaultSessionTemplateId.isEmpty
+                              ? null
+                              : _prefs.defaultSessionTemplateId,
+                          decoration: InputDecoration(
+                            labelText: loc.defaultSessionModel,
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(loc.none),
+                            ),
+                            ..._templates.map((t) => DropdownMenuItem(
+                                  value: t.id,
+                                  child: Text(t.name),
+                                )),
+                          ],
+                          onChanged: (v) => setState(
+                              () => _prefs.defaultSessionTemplateId = v ?? ''),
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          value: _prefs.defaultAnamnesisTemplateId.isEmpty
+                              ? null
+                              : _prefs.defaultAnamnesisTemplateId,
+                          decoration: InputDecoration(
+                            labelText: loc.defaultAnamnesisModel,
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(loc.none),
+                            ),
+                            ..._templates.map((t) => DropdownMenuItem(
+                                  value: t.id,
+                                  child: Text(t.name),
+                                )),
+                          ],
+                          onChanged: (v) => setState(() =>
+                              _prefs.defaultAnamnesisTemplateId = v ?? ''),
+                        ),
+                      ],
                     ),
                   ),
                 ),

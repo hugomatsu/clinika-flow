@@ -15,7 +15,7 @@ class TemplateSeeder {
       if (existing.isNotEmpty) return;
 
       // Seed the two built-in templates
-      await FirestoreService.createTemplate(_standardMyofascial());
+      await FirestoreService.createTemplate(_standardSession());
       await FirestoreService.createTemplate(_quickCheckin());
     } catch (_) {
       // Offline or not authenticated yet — will retry next time
@@ -28,81 +28,31 @@ class TemplateSeeder {
     return List.generate(20, (_) => r.nextInt(36).toRadixString(36)).join();
   }
 
-  static SessionTemplate _standardMyofascial() {
+  static SessionTemplate _standardSession() {
     return SessionTemplate(
-      name: 'Sessão Miofascial Padrão',
-      description: 'Modelo completo para sessões de liberação miofascial.',
-      isDefault: true,
-      isBuiltIn: true,
+      name: 'Sessão Padrão',
+      description: 'Modelo leve: anotações, valor pago e tempo gasto.',
       fields: [
         FieldDefinition(
           guid: _guid(),
-          type: FieldType.label,
-          label: 'Avaliação pré-sessão',
-          order: 0,
-        ),
-        FieldDefinition(
-          guid: _guid(),
-          type: FieldType.slider,
-          label: 'Dor antes da sessão',
-          order: 1,
-          config: {'min': 0.0, 'max': 10.0, 'step': 1.0, 'unit': ''},
-        ),
-        FieldDefinition(
-          guid: _guid(),
-          type: FieldType.tags,
-          label: 'Técnicas aplicadas',
-          order: 2,
-          config: {
-            'options': [
-              'Liberação Miofascial',
-              'Ventosaterapia',
-              'Dry Needling',
-              'Terapia Manual',
-              'Alongamento',
-              'Exercício Terapêutico',
-              'Ultrassom',
-              'TENS',
-            ],
-            'allowCustom': true,
-          },
-        ),
-        FieldDefinition(
-          guid: _guid(),
-          type: FieldType.tags,
-          label: 'Regiões tratadas',
-          order: 3,
-          config: {
-            'options': [
-              'Trapézio',
-              'Lombar',
-              'Cervical',
-              'Quadril',
-              'Joelho',
-              'Ombro',
-            ],
-            'allowCustom': true,
-          },
-        ),
-        FieldDefinition(
-          guid: _guid(),
-          type: FieldType.label,
-          label: 'Pós-sessão',
-          order: 4,
-        ),
-        FieldDefinition(
-          guid: _guid(),
-          type: FieldType.slider,
-          label: 'Dor após a sessão',
-          order: 5,
-          config: {'min': 0.0, 'max': 10.0, 'step': 1.0, 'unit': ''},
-        ),
-        FieldDefinition(
-          guid: _guid(),
           type: FieldType.textField,
-          label: 'Observações clínicas',
-          order: 6,
+          label: 'Anotações',
+          order: 0,
           config: {'multiline': true, 'maxLength': 0},
+        ),
+        FieldDefinition(
+          guid: _guid(),
+          type: FieldType.currency,
+          label: 'Valor pago',
+          order: 1,
+          config: {'prefix': 'R\$'},
+        ),
+        FieldDefinition(
+          guid: _guid(),
+          type: FieldType.slider,
+          label: 'Tempo gasto (min)',
+          order: 2,
+          config: {'min': 0.0, 'max': 120.0, 'step': 5.0, 'unit': 'min'},
         ),
       ],
     );
@@ -112,7 +62,6 @@ class TemplateSeeder {
     return SessionTemplate(
       name: 'Check-in Rápido',
       description: 'Modelo simplificado para avaliações rápidas.',
-      isBuiltIn: true,
       fields: [
         FieldDefinition(
           guid: _guid(),

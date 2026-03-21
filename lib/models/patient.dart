@@ -5,7 +5,8 @@ enum PatientStatus { active, inactive, archived }
 class Patient {
   String id;
   String fullName;
-  String phone;
+  String whatsapp;
+  String instagram;
   String email;
   DateTime dateOfBirth;
   String occupation;
@@ -25,7 +26,8 @@ class Patient {
   Patient({
     this.id = '',
     this.fullName = '',
-    this.phone = '',
+    this.whatsapp = '',
+    this.instagram = '',
     this.email = '',
     DateTime? dateOfBirth,
     this.occupation = '',
@@ -45,7 +47,8 @@ class Patient {
 
   Map<String, dynamic> toMap() => {
         'fullName': fullName,
-        'phone': phone,
+        'whatsapp': whatsapp,
+        'instagram': instagram,
         'email': email,
         'dateOfBirth': Timestamp.fromDate(dateOfBirth),
         'occupation': occupation,
@@ -63,7 +66,8 @@ class Patient {
   factory Patient.fromMap(String id, Map<String, dynamic> map) => Patient(
         id: id,
         fullName: map['fullName'] ?? '',
-        phone: map['phone'] ?? '',
+        whatsapp: map['whatsapp'] ?? map['phone'] ?? '',
+        instagram: map['instagram'] ?? '',
         email: map['email'] ?? '',
         dateOfBirth: (map['dateOfBirth'] as Timestamp?)?.toDate(),
         occupation: map['occupation'] ?? '',

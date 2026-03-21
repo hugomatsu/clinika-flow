@@ -627,4 +627,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToAddLogo => 'Tap to add logo';
+
+  @override
+  String get fieldCurrency => 'Currency (R\$)';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get instagram => 'Instagram';
+
+  @override
+  String get settingsShort => 'Settings';
+
+  @override
+  String get defaultSessionModel => 'Default session model';
+
+  @override
+  String get defaultAnamnesisModel => 'Default anamnesis model';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get spentTime => 'Time spent (min)';
+
+  @override
+  String get sessionNotes => 'Notes';
+
+  @override
+  String get paidPrice => 'Paid amount';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get annual => 'Annual';
+
+  @override
+  String get newPatients => 'New patients';
+
+  @override
+  String get recurringPatients => 'Recurring patients';
+
+  @override
+  String get totalReceived => 'Total received';
+
+  @override
+  String get bestWeek => 'Best week';
+
+  @override
+  String get bestWeekSessions => 'Best week (sessions)';
+
+  @override
+  String get finance => 'Finance';
 }
