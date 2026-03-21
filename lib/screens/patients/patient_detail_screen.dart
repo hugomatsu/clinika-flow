@@ -3,6 +3,7 @@ import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/patient.dart';
 import '../../models/appointment.dart';
 import '../../models/session_record.dart';
+import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
 import 'patient_form_screen.dart';
 import '../appointments/appointment_form_screen.dart';
@@ -21,6 +22,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   Patient? _patient;
   List<Appointment> _appointments = [];
   List<SessionRecord> _sessions = [];
+  List<SessionTemplate> _templates = [];
   bool _loading = true;
 
   @override
@@ -32,18 +34,28 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   Future<void> _load() async {
     try {
       final patient = await FirestoreService.getPatientById(widget.patientId);
-      final appointments =
-          await FirestoreService.getAppointmentsByPatient(widget.patientId);
-      final sessions = await FirestoreService.getAllSessions();
-      final apptIds = appointments.map((a) => a.id).toSet();
-      final patientSessions =
-          sessions.where((s) => apptIds.contains(s.appointmentId)).toList();
+
+      List<Appointment> appointments = [];
+      List<SessionRecord> patientSessions = [];
+      List<SessionTemplate> templates = [];
+      try {
+        appointments =
+            await FirestoreService.getAppointmentsByPatient(widget.patientId);
+        final sessions = await FirestoreService.getAllSessions();
+        final apptIds = appointments.map((a) => a.id).toSet();
+        patientSessions =
+            sessions.where((s) => apptIds.contains(s.appointmentId)).toList();
+        templates = await FirestoreService.getAllTemplates();
+      } catch (e) {
+        debugPrint('Failed to load appointments/sessions: $e');
+      }
 
       if (mounted) {
         setState(() {
           _patient = patient;
           _appointments = appointments;
           _sessions = patientSessions;
+          _templates = templates;
           _loading = false;
         });
       }
@@ -150,6 +162,66 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     if (confirmed == true) {
       await FirestoreService.deletePatient(widget.patientId);
       if (mounted) Navigator.pop(context);
+    }
+  }
+
+  Future<void> _openAnamnesis(Patient p) async {
+    final loc = AppLocalizations.of(context)!;
+
+    // Pick template if none set yet
+    String tmplId = p.anamnesisTemplateId;
+    if (tmplId.isEmpty && _templates.isNotEmpty) {
+      final picked = await showModalBottomSheet<String>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(loc.selectTemplate,
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              ..._templates.map((t) => ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(t.name),
+                    subtitle: t.description.isNotEmpty
+                        ? Text(t.description, maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, t.id),
+                  )),
+            ],
+          ),
+        ),
+      );
+      if (picked == null) return;
+      tmplId = picked;
+    }
+
+    if (tmplId.isEmpty) return;
+
+    final tmpl = await FirestoreService.getTemplateById(tmplId);
+    if (tmpl == null || !mounted) return;
+
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _AnamnesisFormScreen(
+          template: tmpl,
+          initialValues: Map<String, dynamic>.from(p.anamnesisData),
+          patientName: p.fullName,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      p.anamnesisTemplateId = tmplId;
+      p.anamnesisTemplateVersion = tmpl.currentVersion;
+      p.anamnesisData = result;
+      await FirestoreService.updatePatient(p);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.anamnesisSaved)));
+      _load();
     }
   }
 
@@ -284,33 +356,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                 ),
               ),
             ),
-            if (p.posturalAnamnesis.isNotEmpty || p.injuryHistory.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (p.posturalAnamnesis.isNotEmpty) ...[
-                        Text(loc.posturalAnamnesis,
-                            style: Theme.of(context).textTheme.labelLarge),
-                        const SizedBox(height: 4),
-                        Text(p.posturalAnamnesis),
-                      ],
-                      if (p.posturalAnamnesis.isNotEmpty && p.injuryHistory.isNotEmpty)
-                        const Divider(height: 24),
-                      if (p.injuryHistory.isNotEmpty) ...[
-                        Text(loc.injuryHistory,
-                            style: Theme.of(context).textTheme.labelLarge),
-                        const SizedBox(height: 4),
-                        Text(p.injuryHistory),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
+
+            // Anamnesis section (legacy text + template-based)
+            const SizedBox(height: 12),
+            _buildAnamnesisSection(p, loc, colorScheme),
+
             const SizedBox(height: 12),
             // Stats row
             Row(
@@ -334,78 +384,244 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                 ),
               ],
             ),
+
+            // Sessions history
             const SizedBox(height: 16),
-            // Appointments header + add button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(loc.appointments,
-                    style: Theme.of(context).textTheme.titleMedium),
-                TextButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: Text(loc.newAppointment),
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            AppointmentFormScreen(preselectedPatientId: p.id),
-                      ),
-                    );
-                    _load();
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (_appointments.isEmpty)
-              Text(loc.noAppointments,
-                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)))
-            else
-              ..._appointments.map((a) {
-                final date = a.scheduledDate;
-                return Card(
-                  child: ListTile(
-                    leading: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          date.day.toString().padLeft(2, '0'),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        Text(
-                          _monthAbbr(date.month),
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                      ],
-                    ),
-                    title: Text(
-                      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} · ${a.durationMinutes} min',
-                    ),
-                    subtitle: a.notes.isNotEmpty ? Text(a.notes) : null,
-                    trailing: Chip(
-                      label: Text(
-                        _appointmentStatusLabel(a.status, loc),
-                        style: const TextStyle(fontSize: 11, color: Colors.white),
-                      ),
-                      backgroundColor: _appointmentStatusColor(a.status),
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onTap: () => _openAppointmentOptions(a, p),
-                  ),
-                );
-              }),
+            _buildSessionsHistory(loc, colorScheme),
+
+            // Appointments
+            const SizedBox(height: 16),
+            _buildAppointmentsSection(p, loc, colorScheme),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
+
+  // ── Anamnesis section ─────────────────────────────────────────────────────
+
+  Widget _buildAnamnesisSection(
+      Patient p, AppLocalizations loc, ColorScheme colorScheme) {
+    final hasLegacy =
+        p.posturalAnamnesis.isNotEmpty || p.injuryHistory.isNotEmpty;
+    final hasTemplate = p.anamnesisData.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(loc.anamnesis,
+                style: Theme.of(context).textTheme.titleMedium),
+            TextButton.icon(
+              icon: Icon(hasTemplate ? Icons.edit : Icons.add, size: 18),
+              label: Text(hasTemplate ? loc.editAnamnesis : loc.fillAnamnesis),
+              onPressed: () => _openAnamnesis(p),
+            ),
+          ],
+        ),
+        // Legacy text fields
+        if (hasLegacy)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (p.posturalAnamnesis.isNotEmpty) ...[
+                    Text(loc.posturalAnamnesis,
+                        style: Theme.of(context).textTheme.labelLarge),
+                    const SizedBox(height: 4),
+                    Text(p.posturalAnamnesis),
+                  ],
+                  if (p.posturalAnamnesis.isNotEmpty &&
+                      p.injuryHistory.isNotEmpty)
+                    const Divider(height: 24),
+                  if (p.injuryHistory.isNotEmpty) ...[
+                    Text(loc.injuryHistory,
+                        style: Theme.of(context).textTheme.labelLarge),
+                    const SizedBox(height: 4),
+                    Text(p.injuryHistory),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        // Template-based anamnesis summary
+        if (hasTemplate)
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.assignment_turned_in,
+                  color: Colors.green.shade700),
+              title: Text(loc.anamnesis),
+              subtitle: Text(loc.subTemplateCompleted),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openAnamnesis(p),
+            ),
+          ),
+        if (!hasLegacy && !hasTemplate)
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.assignment_outlined,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4)),
+              title: Text(loc.fillAnamnesis,
+                  style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.5))),
+              onTap: () => _openAnamnesis(p),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ── Sessions history ──────────────────────────────────────────────────────
+
+  Widget _buildSessionsHistory(AppLocalizations loc, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(loc.sessionHistoryTitle,
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (_sessions.isEmpty)
+          Text(loc.noSessions,
+              style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5)))
+        else
+          ..._sessions.map((s) {
+            final date = s.sessionDateTime;
+            return Card(
+              child: ListTile(
+                leading: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      date.day.toString().padLeft(2, '0'),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    Text(_monthAbbr(date.month),
+                        style: const TextStyle(fontSize: 11)),
+                  ],
+                ),
+                title: Text(loc.painScore(
+                    s.prePainScore, s.postPainScore)),
+                subtitle: s.observations.isNotEmpty
+                    ? Text(s.observations,
+                        maxLines: 2, overflow: TextOverflow.ellipsis)
+                    : s.techniques.isNotEmpty
+                        ? Text(s.techniques.join(', '),
+                            maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : null,
+                trailing: Icon(Icons.chevron_right,
+                    color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                onTap: () {
+                  // Find the appointment for this session
+                  final appt = _appointments
+                      .where((a) => a.id == s.appointmentId)
+                      .toList();
+                  if (appt.isNotEmpty && _patient != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SessionRecordScreen(
+                          appointment: appt.first,
+                          patient: _patient!,
+                        ),
+                      ),
+                    ).then((_) => _load());
+                  }
+                },
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  // ── Appointments section ──────────────────────────────────────────────────
+
+  Widget _buildAppointmentsSection(
+      Patient p, AppLocalizations loc, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(loc.appointments,
+                style: Theme.of(context).textTheme.titleMedium),
+            TextButton.icon(
+              icon: const Icon(Icons.add),
+              label: Text(loc.newAppointment),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        AppointmentFormScreen(preselectedPatientId: p.id),
+                  ),
+                );
+                _load();
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_appointments.isEmpty)
+          Text(loc.noAppointments,
+              style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5)))
+        else
+          ..._appointments.map((a) {
+            final date = a.scheduledDate;
+            return Card(
+              child: ListTile(
+                leading: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      date.day.toString().padLeft(2, '0'),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      _monthAbbr(date.month),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
+                title: Text(
+                  '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} · ${a.durationMinutes} min',
+                ),
+                subtitle: a.notes.isNotEmpty ? Text(a.notes) : null,
+                trailing: Chip(
+                  label: Text(
+                    _appointmentStatusLabel(a.status, loc),
+                    style: const TextStyle(fontSize: 11, color: Colors.white),
+                  ),
+                  backgroundColor: _appointmentStatusColor(a.status),
+                  padding: EdgeInsets.zero,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onTap: () => _openAppointmentOptions(a, p),
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  // ── Shared helpers ────────────────────────────────────────────────────────
 
   Widget _infoRow(IconData icon, String label, String value) {
     return Row(
@@ -468,5 +684,281 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
     ];
     return abbr[month - 1];
+  }
+}
+
+// ── Anamnesis form screen (template-based) ──────────────────────────────────
+
+class _AnamnesisFormScreen extends StatefulWidget {
+  final SessionTemplate template;
+  final Map<String, dynamic> initialValues;
+  final String patientName;
+
+  const _AnamnesisFormScreen({
+    required this.template,
+    required this.initialValues,
+    required this.patientName,
+  });
+
+  @override
+  State<_AnamnesisFormScreen> createState() => _AnamnesisFormScreenState();
+}
+
+class _AnamnesisFormScreenState extends State<_AnamnesisFormScreen> {
+  late List<FieldDefinition> _fields;
+  final Map<String, dynamic> _values = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fields = widget.template.fields.toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+    _values.addAll(widget.initialValues);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(loc.anamnesis),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            tooltip: loc.save,
+            onPressed: () => Navigator.pop(context, _values),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Patient header
+          Card(
+            color: colorScheme.primaryContainer,
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: colorScheme.primary,
+                child: Text(
+                  widget.patientName.isNotEmpty
+                      ? widget.patientName[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(color: colorScheme.onPrimary),
+                ),
+              ),
+              title: Text(widget.patientName,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onPrimaryContainer)),
+              subtitle: Text(widget.template.name,
+                  style: TextStyle(color: colorScheme.onPrimaryContainer)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._fields.map((f) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildField(f, colorScheme),
+              )),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(context, _values),
+            icon: const Icon(Icons.check),
+            label: Text(loc.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField(FieldDefinition field, ColorScheme colorScheme) {
+    switch (field.type) {
+      case FieldType.slider:
+        final mn = ((field.config['min'] ?? 0.0) as num).toDouble();
+        final mx = ((field.config['max'] ?? 10.0) as num).toDouble();
+        final step = ((field.config['step'] ?? 1.0) as num).toDouble();
+        final divisions = step > 0 ? ((mx - mn) / step).round() : 10;
+        final val =
+            ((_values[field.guid] ?? mn) as num).toDouble().clamp(mn, mx);
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(field.label,
+                    style: Theme.of(context).textTheme.titleSmall),
+                Slider(
+                  value: val,
+                  min: mn,
+                  max: mx,
+                  divisions: divisions > 0 ? divisions : null,
+                  label: val.round().toString(),
+                  onChanged: (v) =>
+                      setState(() => _values[field.guid] = v),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case FieldType.textField:
+        final multiline = field.config['multiline'] ?? false;
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: TextEditingController(
+                  text: (_values[field.guid] ?? '') as String),
+              maxLines: multiline ? 5 : 1,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: field.label,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (v) => _values[field.guid] = v,
+            ),
+          ),
+        );
+
+      case FieldType.label:
+        return Card(
+          color: colorScheme.surfaceContainerHighest,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(field.label,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          ),
+        );
+
+      case FieldType.tags:
+        final options = List<String>.from(field.config['options'] ?? []);
+        final selected =
+            Set<String>.from((_values[field.guid] ?? <String>[]) as List);
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(field.label,
+                    style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: options.map((o) {
+                    return FilterChip(
+                      label: Text(o),
+                      selected: selected.contains(o),
+                      onSelected: (v) {
+                        setState(() {
+                          if (v) {
+                            selected.add(o);
+                          } else {
+                            selected.remove(o);
+                          }
+                          _values[field.guid] = selected.toList();
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case FieldType.comboBox:
+        final options = List<String>.from(field.config['options'] ?? []);
+        final val = _values[field.guid] as String?;
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: field.label,
+                border: const OutlineInputBorder(),
+              ),
+              // ignore: deprecated_member_use
+              value: (val != null && options.contains(val)) ? val : null,
+              items: options
+                  .map((o) => DropdownMenuItem(value: o, child: Text(o)))
+                  .toList(),
+              onChanged: (v) =>
+                  setState(() => _values[field.guid] = v),
+            ),
+          ),
+        );
+
+      case FieldType.checkbox:
+        final items = List<Map<String, dynamic>>.from(
+            (field.config['items'] as List<dynamic>?)
+                    ?.map((e) => Map<String, dynamic>.from(e)) ??
+                []);
+        final checked =
+            Set<String>.from((_values[field.guid] ?? <String>[]) as List);
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(field.label,
+                    style: Theme.of(context).textTheme.titleSmall),
+                ...items.map((item) {
+                  final guid = item['guid'] ?? '';
+                  return CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(item['label'] ?? ''),
+                    value: checked.contains(guid),
+                    onChanged: (v) {
+                      setState(() {
+                        if (v == true) {
+                          checked.add(guid);
+                        } else {
+                          checked.remove(guid);
+                        }
+                        _values[field.guid] = checked.toList();
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+
+      case FieldType.toggle:
+        final val = (_values[field.guid] ?? field.config['defaultValue'] ?? false) as bool;
+        return Card(
+          child: SwitchListTile(
+            title: Text(field.label,
+                style: Theme.of(context).textTheme.titleSmall),
+            value: val,
+            onChanged: (v) => setState(() => _values[field.guid] = v),
+          ),
+        );
+
+      case FieldType.image:
+      case FieldType.subTemplate:
+        return Card(
+          child: ListTile(
+            leading: Icon(
+              field.type == FieldType.image
+                  ? Icons.image_outlined
+                  : Icons.article_outlined,
+              color: colorScheme.primary,
+            ),
+            title: Text(field.label),
+          ),
+        );
+    }
   }
 }

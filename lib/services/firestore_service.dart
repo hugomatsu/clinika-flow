@@ -5,6 +5,7 @@ import '../models/branding_preferences.dart';
 import '../models/financial_record.dart';
 import '../models/patient.dart';
 import '../models/session_record.dart';
+import '../models/session_template.dart';
 
 class FirestoreService {
   static FirebaseFirestore get _db => FirebaseFirestore.instance;
@@ -24,6 +25,9 @@ class FirestoreService {
 
   static CollectionReference<Map<String, dynamic>> get _financials =>
       _db.collection('clinics/$_clinicId/financials');
+
+  static CollectionReference<Map<String, dynamic>> get _templates =>
+      _db.collection('clinics/$_clinicId/templates');
 
   static DocumentReference<Map<String, dynamic>> get _branding =>
       _db.doc('clinics/$_clinicId/settings/branding');
@@ -89,11 +93,12 @@ class FirestoreService {
       String patientId) async {
     final snap = await _appointments
         .where('patientId', isEqualTo: patientId)
-        .orderBy('scheduledDate', descending: true)
         .get();
-    return snap.docs
+    final list = snap.docs
         .map((d) => Appointment.fromMap(d.id, d.data()))
         .toList();
+    list.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+    return list;
   }
 
   static Future<void> deleteAppointment(String id) async {
@@ -109,6 +114,13 @@ class FirestoreService {
     record.createdAt = DateTime.now();
     record.updatedAt = DateTime.now();
     await ref.set(record.toMap());
+    return record;
+  }
+
+  static Future<SessionRecord> updateSessionRecord(
+      SessionRecord record) async {
+    record.updatedAt = DateTime.now();
+    await _sessions.doc(record.id).update(record.toMap());
     return record;
   }
 
@@ -147,6 +159,88 @@ class FirestoreService {
     return snap.docs
         .map((d) => FinancialRecord.fromMap(d.id, d.data()))
         .toList();
+  }
+
+  // ── SessionTemplate ──────────────────────────────────────────────────────
+
+  static Future<SessionTemplate> createTemplate(
+      SessionTemplate template) async {
+    final ref = _templates.doc();
+    template.id = ref.id;
+    template.createdAt = DateTime.now();
+    template.lastSavedAt = DateTime.now();
+    template.currentVersion = 1;
+    await ref.set(template.toMap());
+    // Store the initial version snapshot
+    await _saveVersionSnapshot(template);
+    return template;
+  }
+
+  static Future<SessionTemplate> updateTemplate(
+      SessionTemplate template) async {
+    template.currentVersion += 1;
+    template.lastSavedAt = DateTime.now();
+    await _templates.doc(template.id).update(template.toMap());
+    await _saveVersionSnapshot(template);
+    return template;
+  }
+
+  static Future<void> _saveVersionSnapshot(SessionTemplate template) async {
+    final version = TemplateVersion(
+      templateId: template.id,
+      version: template.currentVersion,
+      savedAt: template.lastSavedAt,
+      fieldsSnapshot: template.fields
+          .map((f) => f.copyWith())
+          .toList(),
+    );
+    await _templates
+        .doc(template.id)
+        .collection('versions')
+        .doc('v${template.currentVersion}')
+        .set(version.toMap());
+  }
+
+  static Future<List<SessionTemplate>> getAllTemplates() async {
+    final snap = await _templates.orderBy('name').get();
+    return snap.docs
+        .map((d) => SessionTemplate.fromMap(d.id, d.data()))
+        .toList();
+  }
+
+  static Future<SessionTemplate?> getTemplateById(String id) async {
+    final doc = await _templates.doc(id).get();
+    if (!doc.exists || doc.data() == null) return null;
+    return SessionTemplate.fromMap(doc.id, doc.data()!);
+  }
+
+  static Future<SessionTemplate?> getDefaultTemplate() async {
+    final snap =
+        await _templates.where('isDefault', isEqualTo: true).limit(1).get();
+    if (snap.docs.isEmpty) return null;
+    final d = snap.docs.first;
+    return SessionTemplate.fromMap(d.id, d.data());
+  }
+
+  static Future<TemplateVersion?> getTemplateVersion(
+      String templateId, int version) async {
+    final doc = await _templates
+        .doc(templateId)
+        .collection('versions')
+        .doc('v$version')
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return TemplateVersion.fromMap(doc.data()!);
+  }
+
+  static Future<void> deleteTemplate(String id) async {
+    // Delete version snapshots first
+    final versions =
+        await _templates.doc(id).collection('versions').get();
+    for (final v in versions.docs) {
+      await v.reference.delete();
+    }
+    await _templates.doc(id).delete();
   }
 
   // ── BrandingPreferences ───────────────────────────────────────────────────

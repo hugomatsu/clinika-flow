@@ -119,5 +119,89 @@
     }
   },
   "filter": "Filter",
-  "viewSession": "View session"
+  "viewSession": "View session",
+
+  "templates": "Templates",
+  "newTemplate": "New Template",
+  "editTemplate": "Edit Template",
+  "noTemplates": "No templates created.",
+  "templateName": "Template name",
+  "templateDescription": "Description",
+  "templateSaved": "Template saved successfully!",
+  "templateDeleted": "Template deleted.",
+  "deleteTemplateConfirm": "Delete this template? Existing session records will not be affected.",
+  "setAsDefault": "Set as default",
+  "defaultTemplate": "Default",
+  "builtIn": "Built-in",
+  "duplicate": "Duplicate",
+  "preview": "Preview",
+  "addField": "Add field",
+  "fieldLabel": "Field label",
+  "fieldSlider": "Slider",
+  "fieldTextField": "Text field",
+  "fieldLabelType": "Static text",
+  "fieldTags": "Tags / Chips",
+  "fieldComboBox": "Dropdown",
+  "fieldImage": "Image capture",
+  "fieldCheckbox": "Checkboxes",
+  "minimum": "Minimum",
+  "maximum": "Maximum",
+  "step": "Step",
+  "unit": "Unit",
+  "multiline": "Multiline",
+  "maxLength": "Character limit",
+  "options": "Options",
+  "addOption": "Add option",
+  "allowCustomTags": "Allow custom tags",
+  "requireAll": "Require all",
+  "imageHint": "Photo instruction",
+  "requiredField": "Required",
+  "selectTemplate": "Select template",
+  "versionLabel": "Version {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": { "type": "int" }
+    }
+  },
+  "fieldCount": "{count} fields",
+  "@fieldCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "profile": "Profile",
+  "displayName": "Display name",
+  "changePassword": "Change password",
+  "currentPassword": "Current password",
+  "newPassword": "New password",
+  "confirmNewPassword": "Confirm new password",
+  "passwordChanged": "Password changed successfully!",
+  "passwordMismatch": "Passwords do not match",
+  "profileSaved": "Profile saved successfully!",
+  "wrongPassword": "Current password is incorrect",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "addPhoto": "Add photo",
+  "fieldSubTemplate": "Sub-template",
+  "subTemplateSelect": "Select linked template",
+  "displayMode": "Display mode",
+  "displayModePage": "Separate page",
+  "displayModeInline": "Inline",
+  "openSubTemplate": "Open form",
+  "subTemplateCompleted": "Completed",
+  "noTemplateSelected": "No template selected",
+  "anamnesis": "Anamnesis",
+  "fillAnamnesis": "Fill anamnesis",
+  "editAnamnesis": "Edit anamnesis",
+  "anamnesisSaved": "Anamnesis saved successfully!",
+  "sessionHistoryTitle": "Session history",
+  "fieldToggle": "Toggle",
+  "painScore": "Pain: {pre} → {post}",
+  "@painScore": {
+    "placeholders": {
+      "pre": { "type": "int" },
+      "post": { "type": "int" }
+    }
+  }
 }

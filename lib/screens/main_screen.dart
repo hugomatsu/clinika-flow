@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
+import '../services/template_seeder.dart';
 import 'patients/patient_list_screen.dart';
 import 'appointments/appointment_list_screen.dart';
+import 'templates/template_list_screen.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'settings/settings_screen.dart';
 
@@ -18,9 +20,16 @@ class _MainScreenState extends State<MainScreen> {
   static const _screens = [
     PatientListScreen(),
     AppointmentListScreen(),
+    TemplateListScreen(),
     DashboardScreen(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    TemplateSeeder.seedIfNeeded();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +53,11 @@ class _MainScreenState extends State<MainScreen> {
             icon: const Icon(Icons.calendar_today_outlined),
             selectedIcon: const Icon(Icons.calendar_today),
             label: loc.appointments,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.description_outlined),
+            selectedIcon: const Icon(Icons.description),
+            label: loc.templates,
           ),
           NavigationDestination(
             icon: const Icon(Icons.bar_chart_outlined),

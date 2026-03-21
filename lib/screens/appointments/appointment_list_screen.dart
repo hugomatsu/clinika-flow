@@ -207,6 +207,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
               ? _buildWeekView(loc, colorScheme)
               : _buildDayView(loc, colorScheme),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_appointments',
         onPressed: () async {
           await Navigator.push(
             context,

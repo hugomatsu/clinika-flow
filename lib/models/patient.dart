@@ -13,6 +13,12 @@ class Patient {
   String posturalAnamnesis;
   String injuryHistory;
   PatientStatus status;
+
+  // Template-based anamnesis: templateId + version + field values
+  String anamnesisTemplateId;
+  int anamnesisTemplateVersion;
+  Map<String, dynamic> anamnesisData;
+
   DateTime createdAt;
   DateTime updatedAt;
 
@@ -27,9 +33,13 @@ class Patient {
     this.posturalAnamnesis = '',
     this.injuryHistory = '',
     this.status = PatientStatus.active,
+    this.anamnesisTemplateId = '',
+    this.anamnesisTemplateVersion = 0,
+    Map<String, dynamic>? anamnesisData,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : dateOfBirth = dateOfBirth ?? DateTime(1970),
+        anamnesisData = anamnesisData ?? {},
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -43,6 +53,9 @@ class Patient {
         'posturalAnamnesis': posturalAnamnesis,
         'injuryHistory': injuryHistory,
         'status': status.name,
+        'anamnesisTemplateId': anamnesisTemplateId,
+        'anamnesisTemplateVersion': anamnesisTemplateVersion,
+        'anamnesisData': anamnesisData,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
       };
@@ -57,6 +70,10 @@ class Patient {
         emergencyContact: map['emergencyContact'] ?? '',
         posturalAnamnesis: map['posturalAnamnesis'] ?? '',
         injuryHistory: map['injuryHistory'] ?? '',
+        anamnesisTemplateId: map['anamnesisTemplateId'] ?? '',
+        anamnesisTemplateVersion: map['anamnesisTemplateVersion'] ?? 0,
+        anamnesisData:
+            Map<String, dynamic>.from(map['anamnesisData'] ?? {}),
         status: PatientStatus.values.firstWhere(
           (s) => s.name == map['status'],
           orElse: () => PatientStatus.active,

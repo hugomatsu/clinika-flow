@@ -101,33 +101,105 @@ Optimized for speed with minimal typing during active sessions:
 
 ### 5. Template System (Session Customization)
 
-Allow users to create and manage reusable session templates for consistency and speed:
+Allow users to build fully custom session forms using a drag-and-drop field builder, save them as named templates, and apply them to any session. Templates version themselves automatically so older session records remain readable even after the template is edited.
 
-**Default Tags Management:**
-- Create custom tag categories (e.g., "Techniques", "Areas", "Special Notes")
-- Define default tags with icons/colors for quick identification
-- Set most-used tags as favorites for priority display
-- Reorder tags by frequency of use
-- Tag validation to prevent duplicates
+---
 
-**Common Protocols:**
-- Pre-built session workflows for different treatment types
-- Each protocol includes: name, description, default tags, estimated duration, step-by-step instructions
-- Quick-apply feature to populate session form with protocol data
-- Ability to modify applied protocols during session
-- Save custom protocols for future use
-- Lock/unlock protocols for template versions
+#### 5.1 Field Types
 
-**Protocol Structure:**
-- Protocol Name & Description
-- Associated Tags (pre-selected)
-- Estimated Duration
-- Photo requirements checklist
-- Common observations template
-- Recommended follow-up actions
+Each field is a self-contained block that the user can add, configure, reorder, and delete inside the template editor.
 
-**Use Case Example:**
-"Cupping Treatment Protocol" includes tags (Cupping, Trapezius, Pain Relief), standard photo requirements, and common observations like "check for contraindications", "document cupping marks", etc.
+| Field Type | Description |
+|------------|-------------|
+| **Slider** | Numeric range (min/max/step/label). Default use: VAS pain scale, range of motion, intensity. |
+| **Text Field** | Free-text input. Short (single line) or long (multiline). Optional character limit. |
+| **Label** | Static read-only text block. Used for section headers, clinical instructions, or consent reminders. |
+| **Tags / Chips** | Multi-select chip list. User defines the tag options. Can allow "add custom tag at fill time". |
+| **Combo Box** | Single-select dropdown. User defines the options list. |
+| **Image Capture** | Photo slot with label (e.g., "Anterior view", "Post-session"). Opens camera or gallery. |
+| **Checkbox** | Single boolean toggle or a checklist (group of labeled checkboxes). Optional "require all" validation. |
+
+---
+
+#### 5.2 Template Builder UI
+
+- **Field palette** — tap a field type to append it to the template, or drag it to a specific position.
+- **Reordering** — long-press any field to drag it up/down in the list.
+- **Field configuration** — tap a field to expand its settings (label text, placeholder, min/max, options list, required flag, etc.).
+- **Delete** — swipe left or tap the trash icon on a field to remove it.
+- **Preview mode** — toggle between edit view and a live preview of how the form will look during a session.
+- **Save / discard** — save stores a new versioned snapshot; discard rolls back all unsaved changes.
+
+---
+
+#### 5.3 Versioning & GUID Stability
+
+Every field carries a **stable GUID** generated at creation time. GUIDs never change, even when the field label or configuration is edited. This allows session records filled against an older template version to be rendered correctly by mapping stored field GUIDs to their value — even if the template has since been restructured.
+
+**Template save model:**
+
+```
+Template
+├── id                        (template GUID — stable across all versions)
+├── name
+├── description
+├── currentVersion            (incremented integer, e.g. 3)
+├── lastSavedAt               (UTC timestamp)
+└── fields[]                  (ordered list of FieldDefinition)
+
+FieldDefinition
+├── guid                      (field GUID — NEVER changes after creation)
+├── type                      (slider | textField | label | tags | comboBox | image | checkbox)
+├── label
+├── order                     (sort index for reordering)
+├── config                    (type-specific: min/max/step, options[], multiline, required, etc.)
+└── addedInVersion            (template version when this field was first introduced)
+
+TemplateVersion  (immutable snapshot stored alongside the template)
+├── templateId
+├── version                   (integer)
+├── savedAt
+└── fieldsSnapshot[]          (full copy of fields[] at save time)
+```
+
+**Compatibility rules:**
+- When rendering a past session record, the system looks up the `TemplateVersion` that was active at fill time.
+- Fields present in the snapshot but absent from the current template are shown read-only as "legacy fields".
+- Fields added after a session was filled are simply absent from that session's record — they are not backfilled.
+- Field GUIDs are used as the key when reading/writing session data, never the label or order index.
+
+---
+
+#### 5.4 Default Templates
+
+The system ships with two built-in templates that can be duplicated but not deleted:
+
+- **Standard Myofascial Session** — Pre-pain slider, techniques tags, post-pain slider, observations text field, photo capture (anterior + posterior).
+- **Quick Check-in** — Pre-pain slider, single combo box ("Main complaint today"), observations text field.
+
+---
+
+#### 5.5 Applying a Template to a Session
+
+- When starting a session the user selects a template (or uses the clinic default).
+- The session form renders the template's current fields in the defined order.
+- The `templateId` and `version` used are stored on the session record so the exact snapshot can be retrieved for future viewing.
+- The user can override any field value during the session; no field is mandatory unless marked `required` in the template.
+
+---
+
+#### 5.6 Use Case Example
+
+"Cupping Protocol" template:
+1. **Label** — "Pre-session assessment"
+2. **Slider** — Pain level (0–10)
+3. **Tags** — Techniques (Cupping, Dry Needling, TENS, …)
+4. **Tags** — Areas (Trapezius, Lumbar, Cervical, …)
+5. **Checkbox** — Contraindication checklist (anticoagulants, skin lesions, pregnancy)
+6. **Image** — "Before photo (posterior)"
+7. **Label** — "Post-session"
+8. **Slider** — Post-session pain (0–10)
+9. **Text Field** — Clinical observations (multiline)
 
 ### 6. Reports & Dashboard (Metrics & Financial Management)
 
@@ -187,12 +259,17 @@ Appointment
 SessionRecord
 ├── id
 ├── appointment_id
+├── templateId                (which template was used)
+├── templateVersion           (snapshot version at fill time)
+├── fieldValues               (map of fieldGuid → value)
+├── session_datetime
+│
+│   ── Legacy fixed fields (pre-template, kept for backwards compat) ──
 ├── pre_pain_score (VAS 0-10)
 ├── post_pain_score (VAS 0-10)
 ├── techniques_applied (tags)
 ├── photos (filepaths)
-├── observations
-└── session_datetime
+└── observations
 
 FinancialRecord
 ├── id
@@ -202,26 +279,35 @@ FinancialRecord
 ├── payment_date
 └── notes
 
-SessionTag
-├── id
-├── name
-├── category (Techniques, Areas, Special Notes, etc.)
-├── icon_name
-├── color_hex
-├── is_favorite
-└── frequency_count
-
-Protocol
-├── id
+Template
+├── id                        (stable GUID)
 ├── name
 ├── description
-├── associated_tags (array of SessionTag IDs)
-├── estimated_duration_minutes
-├── photo_requirements (array of strings)
-├── common_observations (template text)
-├── recommended_followup (array of strings)
-├── is_locked
-└── created_date
+├── currentVersion            (int, increments on each save)
+├── lastSavedAt               (UTC timestamp)
+├── isDefault                 (bool — clinic default template)
+└── fields[]                  → FieldDefinition[]
+
+FieldDefinition
+├── guid                      (stable GUID — never changes)
+├── type                      (slider | textField | label | tags | comboBox | image | checkbox)
+├── label
+├── order                     (sort index)
+├── required                  (bool)
+├── addedInVersion            (template version when field was introduced)
+└── config                    (type-specific JSON)
+    ├── [slider]   min, max, step, unit
+    ├── [text]     multiline (bool), maxLength
+    ├── [tags]     options[], allowCustom (bool)
+    ├── [combo]    options[]
+    ├── [checkbox] items[] (label + guid per item), requireAll (bool)
+    └── [image]    hint (string)
+
+TemplateVersion               (immutable snapshot)
+├── templateId
+├── version                   (int)
+├── savedAt
+└── fieldsSnapshot[]          → FieldDefinition[] (full copy at save time)
 ```
 
 ---

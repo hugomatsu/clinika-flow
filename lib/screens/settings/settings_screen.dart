@@ -17,6 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _loading = true;
   bool _saving = false;
   late TextEditingController _clinicNameCtrl;
+  late TextEditingController _displayNameCtrl;
 
   // Curated palette — professional clinical tones
   static const _palette = [
@@ -51,12 +52,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _clinicNameCtrl = TextEditingController();
+    _displayNameCtrl = TextEditingController(
+        text: AuthService.currentUser?.displayName ?? '');
     _load();
   }
 
   @override
   void dispose() {
     _clinicNameCtrl.dispose();
+    _displayNameCtrl.dispose();
     super.dispose();
   }
 
@@ -115,6 +119,104 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed == true) {
       await AuthService.signOut();
     }
+  }
+
+  Future<void> _saveProfile() async {
+    try {
+      await AuthService.updateDisplayName(_displayNameCtrl.text);
+      if (mounted) {
+        final loc = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(loc.profileSaved)));
+      }
+    } catch (_) {
+      // silently fail if offline
+    }
+  }
+
+  Future<void> _showChangePasswordDialog(AppLocalizations loc) async {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    String? error;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(loc.changePassword),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: currentCtrl,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: loc.currentPassword,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: newCtrl,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: loc.newPassword,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmCtrl,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: loc.confirmNewPassword,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              if (error != null) ...[
+                const SizedBox(height: 8),
+                Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error, fontSize: 13)),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(loc.cancel),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (newCtrl.text != confirmCtrl.text) {
+                  setDialogState(() => error = loc.passwordMismatch);
+                  return;
+                }
+                if (newCtrl.text.length < 6) {
+                  setDialogState(() => error = loc.passwordMinLength);
+                  return;
+                }
+                try {
+                  await AuthService.updatePassword(
+                      currentCtrl.text, newCtrl.text);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(loc.passwordChanged)));
+                  }
+                } catch (_) {
+                  setDialogState(() => error = loc.wrongPassword);
+                }
+              },
+              child: Text(loc.confirm),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    currentCtrl.dispose();
+    newCtrl.dispose();
+    confirmCtrl.dispose();
   }
 
   void _resetDefaults() {
@@ -258,6 +360,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   label: Text(loc.save),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Profile ──────────────────────────────────────────────────
+                _sectionHeader(context, Icons.person, loc.profile),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _displayNameCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: loc.displayName,
+                            prefixIcon: const Icon(Icons.badge_outlined),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          readOnly: true,
+                          controller: TextEditingController(
+                              text: AuthService.currentUser?.email ?? ''),
+                          decoration: InputDecoration(
+                            labelText: loc.email,
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _saveProfile,
+                            icon: const Icon(Icons.save_outlined),
+                            label: Text(loc.save),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  child: ListTile(
+                    leading: Icon(Icons.lock_outline,
+                        color: colorScheme.primary),
+                    title: Text(loc.changePassword),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showChangePasswordDialog(loc),
                   ),
                 ),
                 const SizedBox(height: 24),

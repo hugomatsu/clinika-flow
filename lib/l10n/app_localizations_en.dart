@@ -352,4 +352,209 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewSession => 'View session';
+
+  @override
+  String get templates => 'Templates';
+
+  @override
+  String get newTemplate => 'New Template';
+
+  @override
+  String get editTemplate => 'Edit Template';
+
+  @override
+  String get noTemplates => 'No templates created.';
+
+  @override
+  String get templateName => 'Template name';
+
+  @override
+  String get templateDescription => 'Description';
+
+  @override
+  String get templateSaved => 'Template saved successfully!';
+
+  @override
+  String get templateDeleted => 'Template deleted.';
+
+  @override
+  String get deleteTemplateConfirm =>
+      'Delete this template? Existing session records will not be affected.';
+
+  @override
+  String get setAsDefault => 'Set as default';
+
+  @override
+  String get defaultTemplate => 'Default';
+
+  @override
+  String get builtIn => 'Built-in';
+
+  @override
+  String get duplicate => 'Duplicate';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get addField => 'Add field';
+
+  @override
+  String get fieldLabel => 'Field label';
+
+  @override
+  String get fieldSlider => 'Slider';
+
+  @override
+  String get fieldTextField => 'Text field';
+
+  @override
+  String get fieldLabelType => 'Static text';
+
+  @override
+  String get fieldTags => 'Tags / Chips';
+
+  @override
+  String get fieldComboBox => 'Dropdown';
+
+  @override
+  String get fieldImage => 'Image capture';
+
+  @override
+  String get fieldCheckbox => 'Checkboxes';
+
+  @override
+  String get minimum => 'Minimum';
+
+  @override
+  String get maximum => 'Maximum';
+
+  @override
+  String get step => 'Step';
+
+  @override
+  String get unit => 'Unit';
+
+  @override
+  String get multiline => 'Multiline';
+
+  @override
+  String get maxLength => 'Character limit';
+
+  @override
+  String get options => 'Options';
+
+  @override
+  String get addOption => 'Add option';
+
+  @override
+  String get allowCustomTags => 'Allow custom tags';
+
+  @override
+  String get requireAll => 'Require all';
+
+  @override
+  String get imageHint => 'Photo instruction';
+
+  @override
+  String get requiredField => 'Required';
+
+  @override
+  String get selectTemplate => 'Select template';
+
+  @override
+  String versionLabel(int version) {
+    return 'Version $version';
+  }
+
+  @override
+  String fieldCount(int count) {
+    return '$count fields';
+  }
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get displayName => 'Display name';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String get currentPassword => 'Current password';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmNewPassword => 'Confirm new password';
+
+  @override
+  String get passwordChanged => 'Password changed successfully!';
+
+  @override
+  String get passwordMismatch => 'Passwords do not match';
+
+  @override
+  String get profileSaved => 'Profile saved successfully!';
+
+  @override
+  String get wrongPassword => 'Current password is incorrect';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get addPhoto => 'Add photo';
+
+  @override
+  String get fieldSubTemplate => 'Sub-template';
+
+  @override
+  String get subTemplateSelect => 'Select linked template';
+
+  @override
+  String get displayMode => 'Display mode';
+
+  @override
+  String get displayModePage => 'Separate page';
+
+  @override
+  String get displayModeInline => 'Inline';
+
+  @override
+  String get openSubTemplate => 'Open form';
+
+  @override
+  String get subTemplateCompleted => 'Completed';
+
+  @override
+  String get noTemplateSelected => 'No template selected';
+
+  @override
+  String get anamnesis => 'Anamnesis';
+
+  @override
+  String get fillAnamnesis => 'Fill anamnesis';
+
+  @override
+  String get editAnamnesis => 'Edit anamnesis';
+
+  @override
+  String get anamnesisSaved => 'Anamnesis saved successfully!';
+
+  @override
+  String get sessionHistoryTitle => 'Session history';
+
+  @override
+  String get fieldToggle => 'Toggle';
+
+  @override
+  String painScore(int pre, int post) {
+    return 'Pain: $pre → $post';
+  }
 }

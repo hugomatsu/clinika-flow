@@ -781,6 +781,402 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Ver sessão'**
   String get viewSession;
+
+  /// No description provided for @templates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelos'**
+  String get templates;
+
+  /// No description provided for @newTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo Modelo'**
+  String get newTemplate;
+
+  /// No description provided for @editTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar Modelo'**
+  String get editTemplate;
+
+  /// No description provided for @noTemplates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo criado.'**
+  String get noTemplates;
+
+  /// No description provided for @templateName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do modelo'**
+  String get templateName;
+
+  /// No description provided for @templateDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descrição'**
+  String get templateDescription;
+
+  /// No description provided for @templateSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo salvo com sucesso!'**
+  String get templateSaved;
+
+  /// No description provided for @templateDeleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo excluído.'**
+  String get templateDeleted;
+
+  /// No description provided for @deleteTemplateConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Deseja excluir este modelo? Sessões já registradas não serão afetadas.'**
+  String get deleteTemplateConfirm;
+
+  /// No description provided for @setAsDefault.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir como padrão'**
+  String get setAsDefault;
+
+  /// No description provided for @defaultTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Padrão'**
+  String get defaultTemplate;
+
+  /// No description provided for @builtIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Embutido'**
+  String get builtIn;
+
+  /// No description provided for @duplicate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar'**
+  String get duplicate;
+
+  /// No description provided for @preview.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pré-visualizar'**
+  String get preview;
+
+  /// No description provided for @addField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar campo'**
+  String get addField;
+
+  /// No description provided for @fieldLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rótulo do campo'**
+  String get fieldLabel;
+
+  /// No description provided for @fieldSlider.
+  ///
+  /// In pt, this message translates to:
+  /// **'Controle deslizante'**
+  String get fieldSlider;
+
+  /// No description provided for @fieldTextField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Campo de texto'**
+  String get fieldTextField;
+
+  /// No description provided for @fieldLabelType.
+  ///
+  /// In pt, this message translates to:
+  /// **'Texto estático'**
+  String get fieldLabelType;
+
+  /// No description provided for @fieldTags.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tags / Chips'**
+  String get fieldTags;
+
+  /// No description provided for @fieldComboBox.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lista suspensa'**
+  String get fieldComboBox;
+
+  /// No description provided for @fieldImage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Captura de imagem'**
+  String get fieldImage;
+
+  /// No description provided for @fieldCheckbox.
+  ///
+  /// In pt, this message translates to:
+  /// **'Caixas de seleção'**
+  String get fieldCheckbox;
+
+  /// No description provided for @minimum.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mínimo'**
+  String get minimum;
+
+  /// No description provided for @maximum.
+  ///
+  /// In pt, this message translates to:
+  /// **'Máximo'**
+  String get maximum;
+
+  /// No description provided for @step.
+  ///
+  /// In pt, this message translates to:
+  /// **'Incremento'**
+  String get step;
+
+  /// No description provided for @unit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unidade'**
+  String get unit;
+
+  /// No description provided for @multiline.
+  ///
+  /// In pt, this message translates to:
+  /// **'Múltiplas linhas'**
+  String get multiline;
+
+  /// No description provided for @maxLength.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite de caracteres'**
+  String get maxLength;
+
+  /// No description provided for @options.
+  ///
+  /// In pt, this message translates to:
+  /// **'Opções'**
+  String get options;
+
+  /// No description provided for @addOption.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar opção'**
+  String get addOption;
+
+  /// No description provided for @allowCustomTags.
+  ///
+  /// In pt, this message translates to:
+  /// **'Permitir tags personalizadas'**
+  String get allowCustomTags;
+
+  /// No description provided for @requireAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exigir todos'**
+  String get requireAll;
+
+  /// No description provided for @imageHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instrução para foto'**
+  String get imageHint;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Obrigatório'**
+  String get requiredField;
+
+  /// No description provided for @selectTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar modelo'**
+  String get selectTemplate;
+
+  /// No description provided for @versionLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Versão {version}'**
+  String versionLabel(int version);
+
+  /// No description provided for @fieldCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} campos'**
+  String fieldCount(int count);
+
+  /// No description provided for @profile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Perfil'**
+  String get profile;
+
+  /// No description provided for @displayName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome de exibição'**
+  String get displayName;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterar senha'**
+  String get changePassword;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Senha atual'**
+  String get currentPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova senha'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar nova senha'**
+  String get confirmNewPassword;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In pt, this message translates to:
+  /// **'Senha alterada com sucesso!'**
+  String get passwordChanged;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In pt, this message translates to:
+  /// **'As senhas não coincidem'**
+  String get passwordMismatch;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Perfil salvo com sucesso!'**
+  String get profileSaved;
+
+  /// No description provided for @wrongPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Senha atual incorreta'**
+  String get wrongPassword;
+
+  /// No description provided for @camera.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In pt, this message translates to:
+  /// **'Galeria'**
+  String get gallery;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar foto'**
+  String get addPhoto;
+
+  /// No description provided for @fieldSubTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sub-modelo'**
+  String get fieldSubTemplate;
+
+  /// No description provided for @subTemplateSelect.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar modelo vinculado'**
+  String get subTemplateSelect;
+
+  /// No description provided for @displayMode.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modo de exibição'**
+  String get displayMode;
+
+  /// No description provided for @displayModePage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Página separada'**
+  String get displayModePage;
+
+  /// No description provided for @displayModeInline.
+  ///
+  /// In pt, this message translates to:
+  /// **'Embutido'**
+  String get displayModeInline;
+
+  /// No description provided for @openSubTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir formulário'**
+  String get openSubTemplate;
+
+  /// No description provided for @subTemplateCompleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preenchido'**
+  String get subTemplateCompleted;
+
+  /// No description provided for @noTemplateSelected.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo selecionado'**
+  String get noTemplateSelected;
+
+  /// No description provided for @anamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamnese'**
+  String get anamnesis;
+
+  /// No description provided for @fillAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preencher anamnese'**
+  String get fillAnamnesis;
+
+  /// No description provided for @editAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar anamnese'**
+  String get editAnamnesis;
+
+  /// No description provided for @anamnesisSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamnese salva com sucesso!'**
+  String get anamnesisSaved;
+
+  /// No description provided for @sessionHistoryTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Histórico de sessões'**
+  String get sessionHistoryTitle;
+
+  /// No description provided for @fieldToggle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alternância'**
+  String get fieldToggle;
+
+  /// No description provided for @painScore.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dor: {pre} → {post}'**
+  String painScore(int pre, int post);
 }
 
 class _AppLocalizationsDelegate

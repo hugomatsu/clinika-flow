@@ -99,19 +99,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo / icon
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.local_hospital_rounded,
-                    size: 44,
-                    color: colorScheme.onPrimary,
-                  ),
+                // Logo
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 100,
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -150,6 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
                             autocorrect: false,
+                            textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
                               labelText: loc.email,
                               prefixIcon: const Icon(Icons.email_outlined),
@@ -168,6 +160,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordCtrl,
                             obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) {
+                              if (!_loading) _submit();
+                            },
                             decoration: InputDecoration(
                               labelText: loc.password,
                               prefixIcon: const Icon(Icons.lock_outlined),

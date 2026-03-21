@@ -204,6 +204,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_patients',
         onPressed: () => _openForm(),
         icon: const Icon(Icons.person_add),
         label: Text(loc.newPatient),
