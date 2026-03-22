@@ -35,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color(0xFF1E88E5),
     Color(0xFF0288D1),
     // Teals / Greens
+    Color(0xFF26A69A),
     Color(0xFF00838F),
     Color(0xFF00897B),
     Color(0xFF2E7D32),
@@ -45,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color(0xFFAD1457),
     Color(0xFFD81B60),
     // Warm
+    Color(0xFFFFCA28),
     Color(0xFFC62828),
     Color(0xFFE65100),
     Color(0xFFF9A825),
@@ -291,8 +293,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Color(int.parse('FF$h', radix: 16));
   }
 
-  String _colorToHex(Color color) =>
-      '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
   @override
   Widget build(BuildContext context) {
@@ -500,53 +500,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _sectionHeader(context, Icons.palette, loc.themeColors),
                 const SizedBox(height: 8),
                 Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _colorRow(
-                          context,
-                          label: loc.primaryColor,
-                          subtitle: 'AppBar, botões principais',
-                          currentHex: _prefs.primaryColor,
-                          onSelected: (c) => setState(
-                              () => _prefs.primaryColor = _colorToHex(c)),
-                        ),
-                        const Divider(height: 32),
-                        _colorRow(
-                          context,
-                          label: loc.secondaryColor,
-                          subtitle: 'Chips, destaques secundários',
-                          currentHex: _prefs.secondaryColor,
-                          onSelected: (c) => setState(
-                              () => _prefs.secondaryColor = _colorToHex(c)),
-                        ),
-                        const Divider(height: 32),
-                        _colorRow(
-                          context,
-                          label: loc.accentColor,
-                          subtitle: 'FAB, badges, avisos',
-                          currentHex: _prefs.accentColor,
-                          onSelected: (c) => setState(
-                              () => _prefs.accentColor = _colorToHex(c)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // ── Dark mode ─────────────────────────────────────────────
-                Card(
-                  child: SwitchListTile(
-                    secondary: Icon(
-                      _prefs.darkMode ? Icons.dark_mode : Icons.light_mode,
-                      color: colorScheme.primary,
-                    ),
-                    title: Text(loc.darkMode),
-                    value: _prefs.darkMode,
-                    onChanged: (v) => setState(() => _prefs.darkMode = v),
+                  child: Column(
+                    children: [
+                      _colorTile(
+                        context,
+                        label: loc.primaryColor,
+                        currentHex: _prefs.primaryColor,
+                        onChanged: (hex) =>
+                            setState(() => _prefs.primaryColor = hex),
+                      ),
+                      const Divider(height: 1),
+                      _colorTile(
+                        context,
+                        label: loc.secondaryColor,
+                        currentHex: _prefs.secondaryColor,
+                        onChanged: (hex) =>
+                            setState(() => _prefs.secondaryColor = hex),
+                      ),
+                      const Divider(height: 1),
+                      _colorTile(
+                        context,
+                        label: loc.accentColor,
+                        currentHex: _prefs.accentColor,
+                        onChanged: (hex) =>
+                            setState(() => _prefs.accentColor = hex),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -781,117 +760,194 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _colorRow(
+  Widget _colorTile(
     BuildContext context, {
     required String label,
-    required String subtitle,
     required String currentHex,
-    required void Function(Color) onSelected,
+    required void Function(String) onChanged,
   }) {
     final current = _hexToColor(currentHex);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: current,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: current.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          )),
-                  Text(subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.55),
-                          )),
-                ],
-              ),
-            ),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: current.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                currentHex.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontFamily: 'monospace',
-                  color: current,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+    return ListTile(
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: current,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: current.withValues(alpha: 0.4),
+              blurRadius: 6,
+              spreadRadius: 1,
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _palette.map((color) {
-            final isSelected = color.toARGB32() == current.toARGB32();
-            return GestureDetector(
-              onTap: () => onSelected(color),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: isSelected ? 36 : 32,
-                height: isSelected ? 36 : 32,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.transparent,
-                    width: 2.5,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.6),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          )
-                        ]
-                      : null,
-                ),
-                child: isSelected
-                    ? const Icon(Icons.check,
-                        color: Colors.white, size: 18)
-                    : null,
-              ),
-            );
-          }).toList(),
+      ),
+      title: Text(label),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: current.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(6),
         ),
-      ],
+        child: Text(
+          currentHex.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontFamily: 'monospace',
+            color: current,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      onTap: () => _showColorPickerDialog(context, currentHex, onChanged),
     );
+  }
+
+  void _showColorPickerDialog(
+    BuildContext context,
+    String currentHex,
+    void Function(String) onChanged,
+  ) {
+    final hexCtrl = TextEditingController(
+        text: currentHex.replaceFirst('#', '').toUpperCase());
+    String selectedHex = currentHex;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final selected = _hexToColor(selectedHex);
+
+          return AlertDialog(
+            title: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: selected,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(ctx).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(selectedHex.toUpperCase()),
+              ],
+            ),
+            content: SizedBox(
+              width: 300,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Palette grid
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _palette.map((color) {
+                      final hex =
+                          '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+                      final isSelected =
+                          hex.toUpperCase() == selectedHex.toUpperCase();
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            selectedHex = hex;
+                            hexCtrl.text =
+                                hex.replaceFirst('#', '').toUpperCase();
+                          });
+                        },
+                        child: Container(
+                          width: isSelected ? 38 : 34,
+                          height: isSelected ? 38 : 34,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.transparent,
+                              width: 2.5,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: color.withValues(alpha: 0.6),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check,
+                                  color: Colors.white, size: 16)
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  // Custom hex input
+                  TextField(
+                    controller: hexCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: InputDecoration(
+                      prefixText: '#',
+                      labelText: 'Hex',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.check_circle_outline),
+                        onPressed: () {
+                          final raw = hexCtrl.text
+                              .replaceFirst('#', '')
+                              .toUpperCase();
+                          if (raw.length == 6 &&
+                              RegExp(r'^[0-9A-F]{6}$').hasMatch(raw)) {
+                            setDialogState(() => selectedHex = '#$raw');
+                          }
+                        },
+                      ),
+                    ),
+                    maxLength: 6,
+                    onChanged: (val) {
+                      final raw =
+                          val.replaceFirst('#', '').toUpperCase();
+                      if (raw.length == 6 &&
+                          RegExp(r'^[0-9A-F]{6}$').hasMatch(raw)) {
+                        setDialogState(() => selectedHex = '#$raw');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(AppLocalizations.of(ctx)!.cancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  onChanged(selectedHex);
+                  Navigator.pop(ctx);
+                },
+                child: Text(AppLocalizations.of(ctx)!.confirm),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Dispose controller when dialog closes — the builder keeps it alive
+    // until the dialog is popped, so no explicit dispose needed here.
   }
 }
 

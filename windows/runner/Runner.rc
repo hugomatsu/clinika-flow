@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "clinika_flow" "\0"
+            VALUE "FileDescription", "Clinika Flow" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "clinika_flow" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "clinika_flow.exe" "\0"
-            VALUE "ProductName", "clinika_flow" "\0"
+            VALUE "ProductName", "Clinika Flow" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -39,7 +39,9 @@
       "Bash(ls /Users/hugomatsumoto/Projects/HMLabs/clinika-flow/android/app/src/main/res/mipmap-*/)",
       "Bash(./build-share-android.sh --notes \"v1.0.0+6: Novo ícone do app, upload de logo da clínica nas configurações \\(exibido no link externo de anamnese\\), correção do link externo de anamnese \\(não pede mais login\\), sessões no detalhe do paciente mostram data/hora ao invés de score de dor\")",
       "Bash(./build-share-android.sh --notes \"v1.0.0+7: Novo tipo de campo Valor \\(R$\\) nos modelos \\(conta no faturamento\\), modelo padrão de sessão leve \\(anotações, valor pago, tempo gasto\\), configuração de modelo padrão de sessão e anamnese, WhatsApp e Instagram no cadastro do paciente com botões para abrir app, botões de anamnese renomeados, nav Config. encurtado\")",
-      "Bash(gsutil cors:*)"
+      "Bash(gsutil cors:*)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs ls:*)"
     ]
   }
 }
