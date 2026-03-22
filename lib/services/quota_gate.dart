@@ -20,6 +20,8 @@ class QuotaGate {
         result = await QuotaService.checkTemplates();
       case QuotaResource.anamnesis:
         result = await QuotaService.checkAnamnesis();
+      case QuotaResource.followUps:
+        result = await QuotaService.checkFollowUps();
     }
 
     if (result.allowed) return true;
@@ -67,6 +69,8 @@ class QuotaGate {
         return loc.resourceTemplates;
       case QuotaResource.anamnesis:
         return loc.resourceAnamnesis;
+      case QuotaResource.followUps:
+        return loc.resourceFollowUps;
     }
   }
 }

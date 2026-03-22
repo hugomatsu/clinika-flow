@@ -4,6 +4,7 @@ import '../models/anamnesis_request.dart';
 import '../models/appointment.dart';
 import '../models/branding_preferences.dart';
 import '../models/financial_record.dart';
+import '../models/follow_up.dart';
 import '../models/patient.dart';
 import '../models/session_record.dart';
 import '../models/session_template.dart';
@@ -30,6 +31,9 @@ class FirestoreService {
 
   static CollectionReference<Map<String, dynamic>> get _templates =>
       _db.collection('clinics/$_clinicId/templates');
+
+  static CollectionReference<Map<String, dynamic>> get _followUps =>
+      _db.collection('clinics/$_clinicId/followUps');
 
   static DocumentReference<Map<String, dynamic>> get _branding =>
       _db.doc('clinics/$_clinicId/settings/branding');
@@ -320,4 +324,116 @@ class FirestoreService {
     if (!doc.exists || doc.data() == null) return null;
     return BrandingPreferences.fromMap(doc.data()!);
   }
+
+  // ── FollowUp ───────────────────────────────────────────────────────────────
+
+  static Future<FollowUp> createFollowUp(FollowUp followUp) async {
+    final ref = _followUps.doc();
+    followUp.id = ref.id;
+    followUp.createdAt = DateTime.now();
+    await ref.set(followUp.toMap());
+    return followUp;
+  }
+
+  static Future<void> updateFollowUp(FollowUp followUp) async {
+    await _followUps.doc(followUp.id).update(followUp.toMap());
+  }
+
+  /// Returns pending follow-ups that are due (scheduledAt <= now),
+  /// including snoozed ones whose snooze has expired.
+  static Future<List<FollowUp>> getPendingFollowUps() async {
+    final now = DateTime.now();
+    final snap = await _followUps
+        .where('status', isEqualTo: FollowUpStatus.pending.name)
+        .get();
+    final list = snap.docs
+        .map((d) => FollowUp.fromMap(d.id, d.data()))
+        .where((f) {
+      if (f.snoozedUntil != null && f.snoozedUntil!.isAfter(now)) {
+        return false;
+      }
+      return !f.scheduledAt.isAfter(now);
+    }).toList();
+    list.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+    return list;
+  }
+
+  /// Check if a follow-up already exists for a given appointment.
+  static Future<bool> followUpExistsForAppointment(
+      String appointmentId) async {
+    final snap = await _followUps
+        .where('appointmentId', isEqualTo: appointmentId)
+        .limit(1)
+        .get();
+    return snap.docs.isNotEmpty;
+  }
+
+  // ── Inactivity queries ─────────────────────────────────────────────────────
+
+  /// Returns active patients whose most recent completed appointment
+  /// is older than [daysThreshold] days and who haven't been contacted
+  /// within [cooldownDays].
+  static Future<List<InactivePatient>> getInactivePatients({
+    required int daysThreshold,
+    int cooldownDays = 30,
+  }) async {
+    final patients = await getAllPatients();
+    final appointments = await getAllAppointments();
+    final now = DateTime.now();
+    final cutoff = now.subtract(Duration(days: daysThreshold));
+    final cooldownCutoff = now.subtract(Duration(days: cooldownDays));
+
+    // Build map: patientId -> most recent completed appointment date
+    final lastSession = <String, DateTime>{};
+    for (final a in appointments) {
+      if (a.status != AppointmentStatus.completed) continue;
+      final existing = lastSession[a.patientId];
+      if (existing == null || a.scheduledDate.isAfter(existing)) {
+        lastSession[a.patientId] = a.scheduledDate;
+      }
+    }
+
+    final result = <InactivePatient>[];
+    for (final p in patients) {
+      if (p.status != PatientStatus.active) continue;
+      final last = lastSession[p.id];
+      if (last == null) continue; // never had a session
+      if (last.isAfter(cutoff)) continue; // still active
+
+      // Skip if contacted recently
+      if (p.lastContactedAt != null &&
+          p.lastContactedAt!.isAfter(cooldownCutoff)) {
+        continue;
+      }
+
+      result.add(InactivePatient(
+        patient: p,
+        lastSessionDate: last,
+        daysSinceLastSession: now.difference(last).inDays,
+      ));
+    }
+
+    result.sort((a, b) =>
+        a.lastSessionDate.compareTo(b.lastSessionDate));
+    return result;
+  }
+
+  /// Update only the lastContactedAt field on a patient.
+  static Future<void> markPatientContacted(String patientId) async {
+    await _patients.doc(patientId).update({
+      'lastContactedAt': Timestamp.fromDate(DateTime.now()),
+    });
+  }
+}
+
+class InactivePatient {
+  final Patient patient;
+  final DateTime lastSessionDate;
+  final int daysSinceLastSession;
+
+  const InactivePatient({
+    required this.patient,
+    required this.lastSessionDate,
+    required this.daysSinceLastSession,
+  });
 }

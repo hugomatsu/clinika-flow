@@ -20,6 +20,9 @@ class Patient {
   int anamnesisTemplateVersion;
   Map<String, dynamic> anamnesisData;
 
+  // Communication tracking
+  DateTime? lastContactedAt;
+
   DateTime createdAt;
   DateTime updatedAt;
 
@@ -38,6 +41,7 @@ class Patient {
     this.anamnesisTemplateId = '',
     this.anamnesisTemplateVersion = 0,
     Map<String, dynamic>? anamnesisData,
+    this.lastContactedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : dateOfBirth = dateOfBirth ?? DateTime(1970),
@@ -59,6 +63,9 @@ class Patient {
         'anamnesisTemplateId': anamnesisTemplateId,
         'anamnesisTemplateVersion': anamnesisTemplateVersion,
         'anamnesisData': anamnesisData,
+        'lastContactedAt': lastContactedAt != null
+            ? Timestamp.fromDate(lastContactedAt!)
+            : null,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
       };
@@ -78,6 +85,7 @@ class Patient {
         anamnesisTemplateVersion: map['anamnesisTemplateVersion'] ?? 0,
         anamnesisData:
             Map<String, dynamic>.from(map['anamnesisData'] ?? {}),
+        lastContactedAt: (map['lastContactedAt'] as Timestamp?)?.toDate(),
         status: PatientStatus.values.firstWhere(
           (s) => s.name == map['status'],
           orElse: () => PatientStatus.active,

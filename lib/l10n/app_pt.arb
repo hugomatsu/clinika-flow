@@ -543,5 +543,86 @@
   "resourceTemplates": "modelos",
   "@resourceTemplates": {},
   "resourceAnamnesis": "anamneses",
-  "@resourceAnamnesis": {}
+  "@resourceAnamnesis": {},
+  "resourceFollowUps": "acompanhamentos",
+  "@resourceFollowUps": {},
+
+  "followUps": "Acompanhamentos",
+  "@followUps": {},
+  "followUpPostSession": "Acompanhamento pós-sessão",
+  "@followUpPostSession": {},
+  "followUpWith": "Acompanhar {name}",
+  "@followUpWith": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "followUpSessionInfo": "Sessão: {date}",
+  "@followUpSessionInfo": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "sendWhatsApp": "Enviar WhatsApp",
+  "@sendWhatsApp": {},
+  "dismiss": "Dispensar",
+  "@dismiss": {},
+  "snooze": "Adiar 24h",
+  "@snooze": {},
+  "followUpSent": "Acompanhamento enviado!",
+  "@followUpSent": {},
+  "followUpDismissed": "Acompanhamento dispensado.",
+  "@followUpDismissed": {},
+  "followUpSnoozed": "Adiado por 24 horas.",
+  "@followUpSnoozed": {},
+  "noFollowUps": "Nenhum acompanhamento pendente.",
+  "@noFollowUps": {},
+  "noWhatsApp": "Paciente sem WhatsApp cadastrado.",
+  "@noWhatsApp": {},
+
+  "reengagement": "Reengajamento",
+  "@reengagement": {},
+  "atRisk": "Em risco",
+  "@atRisk": {},
+  "inactive": "Inativos",
+  "@inactive": {},
+  "dormant": "Dormentes",
+  "@dormant": {},
+  "lastSessionDaysAgo": "Última sessão: {days} dias atrás",
+  "@lastSessionDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "schedule": "Agendar",
+  "@schedule": {},
+  "noInactivePatients": "Todos os pacientes estão ativos!",
+  "@noInactivePatients": {},
+  "reengagementMessage": "Mensagem de reengajamento",
+  "@reengagementMessage": {},
+
+  "followUpMonthLimit": "Acompanhamentos/mês",
+  "@followUpMonthLimit": {},
+
+  "msgPostSessionPt": "Olá {patientFirstName}, tudo bem? Aqui é da {clinicName}.\nComo você está se sentindo após a sessão de ontem?\nAlguma mudança na dor ou desconforto?\nEstou acompanhando sua evolução. Qualquer coisa, me avise!",
+  "@msgPostSessionPt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  },
+  "msgReengagePt": "Olá {patientFirstName}! Aqui é da {clinicName}.\nFaz um tempinho que não nos vemos! Como você está?\nLembre que manter a regularidade é importante para os resultados.\nQuer agendar uma sessão? Estou com horários disponíveis!",
+  "@msgReengagePt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  },
+  "msgBirthdayPt": "Feliz aniversário, {patientFirstName}!\nA equipe da {clinicName} deseja um dia incrível para você.\nAproveite seu dia!",
+  "@msgBirthdayPt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  }
 }

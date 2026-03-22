@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
+import '../../models/follow_up.dart';
 import '../../models/patient.dart';
 import '../../models/session_record.dart';
 import '../../models/session_template.dart';
+import '../../services/communication_service.dart';
 import '../../services/firestore_service.dart';
+import '../../services/quota_gate.dart';
 import '../../services/quota_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -25,6 +28,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<SessionRecord> _allSessions = [];
   List<SessionTemplate> _allTemplates = [];
 
+  // Communication data
+  List<FollowUp> _pendingFollowUps = [];
+  List<InactivePatient> _inactivePatients = [];
+  String _clinicName = '';
+
   // Computed stats
   int _newPatients = 0;
   int _recurringPatients = 0;
@@ -41,17 +49,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadData() async {
     try {
-      final patients = await FirestoreService.getAllPatients();
-      final sessions = await FirestoreService.getAllSessions();
-      final templates = await FirestoreService.getAllTemplates();
-      final sub = await QuotaService.getSubscription();
+      final results = await Future.wait([
+        FirestoreService.getAllPatients(),
+        FirestoreService.getAllSessions(),
+        FirestoreService.getAllTemplates(),
+        QuotaService.getSubscription(),
+        FirestoreService.getPendingFollowUps(),
+        FirestoreService.getInactivePatients(daysThreshold: 30),
+        FirestoreService.getBranding(),
+      ]);
 
       if (mounted) {
+        final branding = results[6] as dynamic;
         setState(() {
-          _allPatients = patients;
-          _allSessions = sessions;
-          _allTemplates = templates;
-          _dashboardDaysLimit = sub.limits.dashboardDaysHistory;
+          _allPatients = results[0] as List<Patient>;
+          _allSessions = results[1] as List<SessionRecord>;
+          _allTemplates = results[2] as List<SessionTemplate>;
+          _dashboardDaysLimit =
+              (results[3] as dynamic).limits.dashboardDaysHistory as int;
+          _pendingFollowUps = results[4] as List<FollowUp>;
+          _inactivePatients = results[5] as List<InactivePatient>;
+          _clinicName = branding?.clinicName ?? 'Clinika Flow';
           _loading = false;
         });
         _computeStats();
@@ -324,6 +342,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+
+                  // Follow-ups section
+                  _sectionTitle(
+                      context, Icons.chat_outlined, loc.followUps),
+                  const SizedBox(height: 8),
+                  if (_pendingFollowUps.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline,
+                                color: Colors.green.shade600),
+                            const SizedBox(width: 12),
+                            Text(loc.noFollowUps),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    ..._pendingFollowUps.map(
+                        (f) => _followUpCard(f, loc, colorScheme)),
+
+                  const SizedBox(height: 24),
+
+                  // Re-engagement section
+                  _sectionTitle(
+                      context, Icons.person_search, loc.reengagement),
+                  const SizedBox(height: 8),
+                  if (_inactivePatients.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline,
+                                color: Colors.green.shade600),
+                            const SizedBox(width: 12),
+                            Text(loc.noInactivePatients),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    ..._inactivePatients
+                        .map((ip) => _reengagementCard(ip, loc, colorScheme)),
+
                   const SizedBox(height: 32),
                 ],
               ),
@@ -381,6 +447,232 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
+
+  // ── Follow-up card ──────────────────────────────────────────────────────
+
+  Widget _followUpCard(
+      FollowUp followUp, AppLocalizations loc, ColorScheme colorScheme) {
+    final locale = Localizations.localeOf(context).toString();
+    final dateStr = DateFormat.yMMMd(locale).format(followUp.scheduledAt);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.chat_bubble_outline,
+                    size: 18, color: colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    loc.followUpWith(followUp.patientName),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              loc.followUpSessionInfo(dateStr),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: () => _sendFollowUp(followUp, loc),
+                  icon: const Icon(Icons.send, size: 16),
+                  label: Text(loc.sendWhatsApp),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () => _snoozeFollowUp(followUp, loc),
+                  child: Text(loc.snooze),
+                ),
+                TextButton(
+                  onPressed: () => _dismissFollowUp(followUp, loc),
+                  child: Text(loc.dismiss),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendFollowUp(FollowUp followUp, AppLocalizations loc) async {
+    if (followUp.patientWhatsapp.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(loc.noWhatsApp)));
+      }
+      return;
+    }
+
+    final allowed =
+        await QuotaGate.checkAndGate(context, QuotaResource.followUps);
+    if (!allowed) return;
+
+    final patient = Patient(
+      fullName: followUp.patientName,
+      whatsapp: followUp.patientWhatsapp,
+    );
+    final firstName = CommunicationService.firstName(patient);
+    final message = loc.msgPostSessionPt(firstName, _clinicName);
+
+    final sent =
+        await CommunicationService.openWhatsApp(patient: patient, message: message);
+    if (sent) {
+      followUp.status = FollowUpStatus.sent;
+      followUp.sentAt = DateTime.now();
+      followUp.channel = 'whatsapp';
+      await FirestoreService.updateFollowUp(followUp);
+      await FirestoreService.markPatientContacted(followUp.patientId);
+      await QuotaService.incrementFollowUpCount();
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(loc.followUpSent)));
+        _loadData();
+      }
+    }
+  }
+
+  Future<void> _snoozeFollowUp(FollowUp followUp, AppLocalizations loc) async {
+    followUp.snoozedUntil = DateTime.now().add(const Duration(hours: 24));
+    await FirestoreService.updateFollowUp(followUp);
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.followUpSnoozed)));
+      _loadData();
+    }
+  }
+
+  Future<void> _dismissFollowUp(
+      FollowUp followUp, AppLocalizations loc) async {
+    followUp.status = FollowUpStatus.dismissed;
+    await FirestoreService.updateFollowUp(followUp);
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.followUpDismissed)));
+      _loadData();
+    }
+  }
+
+  // ── Re-engagement card ─────────────────────────────────────────────────
+
+  Widget _reengagementCard(
+      InactivePatient ip, AppLocalizations loc, ColorScheme colorScheme) {
+    final Color badgeColor;
+    final String badge;
+    if (ip.daysSinceLastSession >= 90) {
+      badgeColor = Colors.red.shade600;
+      badge = loc.dormant;
+    } else if (ip.daysSinceLastSession >= 60) {
+      badgeColor = Colors.orange.shade700;
+      badge = loc.inactive;
+    } else {
+      badgeColor = Colors.amber.shade700;
+      badge = loc.atRisk;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          ip.patient.fullName,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          badge,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(color: badgeColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    loc.lastSessionDaysAgo(ip.daysSinceLastSession),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.send),
+              tooltip: loc.sendWhatsApp,
+              onPressed: () => _sendReengagement(ip, loc),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendReengagement(
+      InactivePatient ip, AppLocalizations loc) async {
+    if (ip.patient.whatsapp.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(loc.noWhatsApp)));
+      }
+      return;
+    }
+
+    final allowed =
+        await QuotaGate.checkAndGate(context, QuotaResource.followUps);
+    if (!allowed) return;
+
+    final firstName = CommunicationService.firstName(ip.patient);
+    final message = loc.msgReengagePt(firstName, _clinicName);
+
+    final sent = await CommunicationService.openWhatsApp(
+        patient: ip.patient, message: message);
+    if (sent) {
+      await FirestoreService.markPatientContacted(ip.patient.id);
+      await QuotaService.incrementFollowUpCount();
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(loc.followUpSent)));
+        _loadData();
+      }
+    }
+  }
+
+  // ── Metric card ────────────────────────────────────────────────────────
 
   Widget _metricCard(
     BuildContext context, {

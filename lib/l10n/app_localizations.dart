@@ -1615,6 +1615,156 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'anamneses'**
   String get resourceAnamnesis;
+
+  /// No description provided for @resourceFollowUps.
+  ///
+  /// In pt, this message translates to:
+  /// **'acompanhamentos'**
+  String get resourceFollowUps;
+
+  /// No description provided for @followUps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhamentos'**
+  String get followUps;
+
+  /// No description provided for @followUpPostSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhamento pós-sessão'**
+  String get followUpPostSession;
+
+  /// No description provided for @followUpWith.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhar {name}'**
+  String followUpWith(String name);
+
+  /// No description provided for @followUpSessionInfo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão: {date}'**
+  String followUpSessionInfo(String date);
+
+  /// No description provided for @sendWhatsApp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar WhatsApp'**
+  String get sendWhatsApp;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dispensar'**
+  String get dismiss;
+
+  /// No description provided for @snooze.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adiar 24h'**
+  String get snooze;
+
+  /// No description provided for @followUpSent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhamento enviado!'**
+  String get followUpSent;
+
+  /// No description provided for @followUpDismissed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhamento dispensado.'**
+  String get followUpDismissed;
+
+  /// No description provided for @followUpSnoozed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adiado por 24 horas.'**
+  String get followUpSnoozed;
+
+  /// No description provided for @noFollowUps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum acompanhamento pendente.'**
+  String get noFollowUps;
+
+  /// No description provided for @noWhatsApp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Paciente sem WhatsApp cadastrado.'**
+  String get noWhatsApp;
+
+  /// No description provided for @reengagement.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reengajamento'**
+  String get reengagement;
+
+  /// No description provided for @atRisk.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em risco'**
+  String get atRisk;
+
+  /// No description provided for @inactive.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativos'**
+  String get inactive;
+
+  /// No description provided for @dormant.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dormentes'**
+  String get dormant;
+
+  /// No description provided for @lastSessionDaysAgo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Última sessão: {days} dias atrás'**
+  String lastSessionDaysAgo(int days);
+
+  /// No description provided for @schedule.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agendar'**
+  String get schedule;
+
+  /// No description provided for @noInactivePatients.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos os pacientes estão ativos!'**
+  String get noInactivePatients;
+
+  /// No description provided for @reengagementMessage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mensagem de reengajamento'**
+  String get reengagementMessage;
+
+  /// No description provided for @followUpMonthLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acompanhamentos/mês'**
+  String get followUpMonthLimit;
+
+  /// No description provided for @msgPostSessionPt.
+  ///
+  /// In pt, this message translates to:
+  /// **'Olá {patientFirstName}, tudo bem? Aqui é da {clinicName}.\nComo você está se sentindo após a sessão de ontem?\nAlguma mudança na dor ou desconforto?\nEstou acompanhando sua evolução. Qualquer coisa, me avise!'**
+  String msgPostSessionPt(String patientFirstName, String clinicName);
+
+  /// No description provided for @msgReengagePt.
+  ///
+  /// In pt, this message translates to:
+  /// **'Olá {patientFirstName}! Aqui é da {clinicName}.\nFaz um tempinho que não nos vemos! Como você está?\nLembre que manter a regularidade é importante para os resultados.\nQuer agendar uma sessão? Estou com horários disponíveis!'**
+  String msgReengagePt(String patientFirstName, String clinicName);
+
+  /// No description provided for @msgBirthdayPt.
+  ///
+  /// In pt, this message translates to:
+  /// **'Feliz aniversário, {patientFirstName}!\nA equipe da {clinicName} deseja um dia incrível para você.\nAproveite seu dia!'**
+  String msgBirthdayPt(String patientFirstName, String clinicName);
 }
 
 class _AppLocalizationsDelegate

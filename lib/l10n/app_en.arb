@@ -297,5 +297,67 @@
   "resourcePatients": "patients",
   "resourceSessions": "sessions",
   "resourceTemplates": "templates",
-  "resourceAnamnesis": "anamnesis"
+  "resourceAnamnesis": "anamnesis",
+  "resourceFollowUps": "follow-ups",
+
+  "followUps": "Follow-ups",
+  "followUpPostSession": "Post-session follow-up",
+  "followUpWith": "Follow up with {name}",
+  "@followUpWith": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "followUpSessionInfo": "Session: {date}",
+  "@followUpSessionInfo": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "sendWhatsApp": "Send WhatsApp",
+  "dismiss": "Dismiss",
+  "snooze": "Snooze 24h",
+  "followUpSent": "Follow-up sent!",
+  "followUpDismissed": "Follow-up dismissed.",
+  "followUpSnoozed": "Snoozed for 24 hours.",
+  "noFollowUps": "No pending follow-ups.",
+  "noWhatsApp": "Patient has no WhatsApp registered.",
+
+  "reengagement": "Re-engagement",
+  "atRisk": "At risk",
+  "inactive": "Inactive",
+  "dormant": "Dormant",
+  "lastSessionDaysAgo": "Last session: {days} days ago",
+  "@lastSessionDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "schedule": "Schedule",
+  "noInactivePatients": "All patients are active!",
+  "reengagementMessage": "Re-engagement message",
+
+  "followUpMonthLimit": "Follow-ups/month",
+
+  "msgPostSessionPt": "Hi {patientFirstName}! This is {clinicName}.\nHow are you feeling after yesterday's session?\nAny changes in pain or discomfort?\nI'm tracking your progress. Let me know if you need anything!",
+  "@msgPostSessionPt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  },
+  "msgReengagePt": "Hi {patientFirstName}! This is {clinicName}.\nIt's been a while since we last saw you! How are you doing?\nRemember that consistency is key for results.\nWould you like to schedule a session? We have availability!",
+  "@msgReengagePt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  },
+  "msgBirthdayPt": "Happy birthday, {patientFirstName}!\nThe {clinicName} team wishes you an amazing day.\nEnjoy your day!",
+  "@msgBirthdayPt": {
+    "placeholders": {
+      "patientFirstName": { "type": "String" },
+      "clinicName": { "type": "String" }
+    }
+  }
 }

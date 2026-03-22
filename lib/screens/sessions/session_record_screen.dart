@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/appointment.dart';
+import '../../models/follow_up.dart';
 import '../../models/patient.dart';
 import '../../models/session_record.dart';
 import '../../models/session_template.dart';
@@ -182,6 +183,20 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
       // Mark appointment as completed
       widget.appointment.status = AppointmentStatus.completed;
       await FirestoreService.updateAppointment(widget.appointment);
+
+      // Auto-create post-session follow-up (24h later)
+      final alreadyExists = await FirestoreService
+          .followUpExistsForAppointment(widget.appointment.id);
+      if (!alreadyExists) {
+        await FirestoreService.createFollowUp(FollowUp(
+          patientId: widget.patient.id,
+          patientName: widget.patient.fullName,
+          patientWhatsapp: widget.patient.whatsapp,
+          appointmentId: widget.appointment.id,
+          type: FollowUpType.postSession,
+          scheduledAt: DateTime.now().add(const Duration(hours: 24)),
+        ));
+      }
 
       if (mounted) {
         final loc = AppLocalizations.of(context)!;

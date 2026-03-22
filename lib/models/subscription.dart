@@ -7,6 +7,7 @@ class TierLimits {
   final int maxSessionsPerMonth;
   final int maxTemplates;
   final int maxAnamnesisPerMonth;
+  final int maxFollowUpsPerMonth;
   final int maxStorageMB;
   final int dashboardDaysHistory; // 0 = unlimited
   final bool customBranding;
@@ -17,6 +18,7 @@ class TierLimits {
     required this.maxSessionsPerMonth,
     required this.maxTemplates,
     required this.maxAnamnesisPerMonth,
+    required this.maxFollowUpsPerMonth,
     required this.maxStorageMB,
     required this.dashboardDaysHistory,
     required this.customBranding,
@@ -28,6 +30,7 @@ class TierLimits {
     maxSessionsPerMonth: 30,
     maxTemplates: 2,
     maxAnamnesisPerMonth: 5,
+    maxFollowUpsPerMonth: 5,
     maxStorageMB: 100,
     dashboardDaysHistory: 30,
     customBranding: false,
@@ -39,6 +42,7 @@ class TierLimits {
     maxSessionsPerMonth: 0, // unlimited
     maxTemplates: 10,
     maxAnamnesisPerMonth: 30,
+    maxFollowUpsPerMonth: 30,
     maxStorageMB: 1024,
     dashboardDaysHistory: 365,
     customBranding: false,
@@ -50,6 +54,7 @@ class TierLimits {
     maxSessionsPerMonth: 0,
     maxTemplates: 0,
     maxAnamnesisPerMonth: 0,
+    maxFollowUpsPerMonth: 0,
     maxStorageMB: 5120,
     dashboardDaysHistory: 0,
     customBranding: true,
@@ -61,6 +66,7 @@ class TierLimits {
     maxSessionsPerMonth: 0,
     maxTemplates: 0,
     maxAnamnesisPerMonth: 0,
+    maxFollowUpsPerMonth: 0,
     maxStorageMB: 20480,
     dashboardDaysHistory: 0,
     customBranding: true,
@@ -91,6 +97,7 @@ class Subscription {
   int storageUsedBytes;
   int monthlySessionCount;
   int monthlyAnamnesisCount;
+  int monthlyFollowUpCount;
   DateTime monthResetDate;
 
   Subscription({
@@ -101,6 +108,7 @@ class Subscription {
     this.storageUsedBytes = 0,
     this.monthlySessionCount = 0,
     this.monthlyAnamnesisCount = 0,
+    this.monthlyFollowUpCount = 0,
     DateTime? monthResetDate,
   })  : currentPeriodEnd =
             currentPeriodEnd ?? DateTime.now().add(const Duration(days: 365)),
@@ -116,6 +124,7 @@ class Subscription {
         'storageUsedBytes': storageUsedBytes,
         'monthlySessionCount': monthlySessionCount,
         'monthlyAnamnesisCount': monthlyAnamnesisCount,
+        'monthlyFollowUpCount': monthlyFollowUpCount,
         'monthResetDate': Timestamp.fromDate(monthResetDate),
       };
 
@@ -130,6 +139,7 @@ class Subscription {
         storageUsedBytes: map['storageUsedBytes'] ?? 0,
         monthlySessionCount: map['monthlySessionCount'] ?? 0,
         monthlyAnamnesisCount: map['monthlyAnamnesisCount'] ?? 0,
+        monthlyFollowUpCount: map['monthlyFollowUpCount'] ?? 0,
         monthResetDate: (map['monthResetDate'] as Timestamp?)?.toDate(),
       );
 
@@ -153,6 +163,7 @@ class Subscription {
     if (monthResetDate.isBefore(currentMonth)) {
       monthlySessionCount = 0;
       monthlyAnamnesisCount = 0;
+      monthlyFollowUpCount = 0;
       monthResetDate = currentMonth;
     }
   }

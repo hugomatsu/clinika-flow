@@ -783,4 +783,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resourceAnamnesis => 'anamnesis';
+
+  @override
+  String get resourceFollowUps => 'follow-ups';
+
+  @override
+  String get followUps => 'Follow-ups';
+
+  @override
+  String get followUpPostSession => 'Post-session follow-up';
+
+  @override
+  String followUpWith(String name) {
+    return 'Follow up with $name';
+  }
+
+  @override
+  String followUpSessionInfo(String date) {
+    return 'Session: $date';
+  }
+
+  @override
+  String get sendWhatsApp => 'Send WhatsApp';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get snooze => 'Snooze 24h';
+
+  @override
+  String get followUpSent => 'Follow-up sent!';
+
+  @override
+  String get followUpDismissed => 'Follow-up dismissed.';
+
+  @override
+  String get followUpSnoozed => 'Snoozed for 24 hours.';
+
+  @override
+  String get noFollowUps => 'No pending follow-ups.';
+
+  @override
+  String get noWhatsApp => 'Patient has no WhatsApp registered.';
+
+  @override
+  String get reengagement => 'Re-engagement';
+
+  @override
+  String get atRisk => 'At risk';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get dormant => 'Dormant';
+
+  @override
+  String lastSessionDaysAgo(int days) {
+    return 'Last session: $days days ago';
+  }
+
+  @override
+  String get schedule => 'Schedule';
+
+  @override
+  String get noInactivePatients => 'All patients are active!';
+
+  @override
+  String get reengagementMessage => 'Re-engagement message';
+
+  @override
+  String get followUpMonthLimit => 'Follow-ups/month';
+
+  @override
+  String msgPostSessionPt(String patientFirstName, String clinicName) {
+    return 'Hi $patientFirstName! This is $clinicName.\nHow are you feeling after yesterday\'s session?\nAny changes in pain or discomfort?\nI\'m tracking your progress. Let me know if you need anything!';
+  }
+
+  @override
+  String msgReengagePt(String patientFirstName, String clinicName) {
+    return 'Hi $patientFirstName! This is $clinicName.\nIt\'s been a while since we last saw you! How are you doing?\nRemember that consistency is key for results.\nWould you like to schedule a session? We have availability!';
+  }
+
+  @override
+  String msgBirthdayPt(String patientFirstName, String clinicName) {
+    return 'Happy birthday, $patientFirstName!\nThe $clinicName team wishes you an amazing day.\nEnjoy your day!';
+  }
 }

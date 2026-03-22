@@ -1,7 +1,7 @@
 import '../models/subscription.dart';
 import 'firestore_service.dart';
 
-enum QuotaResource { patients, sessions, templates, anamnesis }
+enum QuotaResource { patients, sessions, templates, anamnesis, followUps }
 
 class QuotaResult {
   final bool allowed;
@@ -115,6 +115,25 @@ class QuotaService {
   static Future<void> incrementAnamnesisCount() async {
     final sub = await getSubscription();
     sub.monthlyAnamnesisCount++;
+    await FirestoreService.updateSubscription(sub);
+  }
+
+  static Future<QuotaResult> checkFollowUps() async {
+    final sub = await getSubscription();
+    final limits = sub.limits;
+    final count = sub.monthlyFollowUpCount;
+    return QuotaResult(
+      allowed: limits.isUnlimited(limits.maxFollowUpsPerMonth) ||
+          count < limits.maxFollowUpsPerMonth,
+      current: count,
+      limit: limits.maxFollowUpsPerMonth,
+      resource: QuotaResource.followUps,
+    );
+  }
+
+  static Future<void> incrementFollowUpCount() async {
+    final sub = await getSubscription();
+    sub.monthlyFollowUpCount++;
     await FirestoreService.updateSubscription(sub);
   }
 
