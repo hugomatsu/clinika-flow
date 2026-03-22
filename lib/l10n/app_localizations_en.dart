@@ -681,4 +681,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get finance => 'Finance';
+
+  @override
+  String get subscription => 'Subscription';
+
+  @override
+  String get currentPlan => 'Current plan';
+
+  @override
+  String get upgradePlan => 'Change plan';
+
+  @override
+  String get freeTier => 'Free';
+
+  @override
+  String get essentialTier => 'Essential';
+
+  @override
+  String get professionalTier => 'Professional';
+
+  @override
+  String get clinicTier => 'Clinic';
+
+  @override
+  String get perMonth => '/mo';
+
+  @override
+  String get perYear => '/yr';
+
+  @override
+  String get unlimitedLabel => 'Unlimited';
+
+  @override
+  String get patientsLimit => 'Patients';
+
+  @override
+  String get sessionsMonthLimit => 'Sessions/month';
+
+  @override
+  String get templatesLimit => 'Templates';
+
+  @override
+  String get anamnesisMonthLimit => 'Anamnesis/month';
+
+  @override
+  String get storageLimit => 'Storage';
+
+  @override
+  String get customBrandingFeature => 'Custom branding';
+
+  @override
+  String get dataExportFeature => 'Data export';
+
+  @override
+  String get dashboardHistory => 'Dashboard history';
+
+  @override
+  String get days30 => '30 days';
+
+  @override
+  String get months12 => '12 months';
+
+  @override
+  String get selectPlan => 'Select';
+
+  @override
+  String get currentPlanBadge => 'Current';
+
+  @override
+  String get planUpgraded => 'Plan changed successfully!';
+
+  @override
+  String get quotaReached => 'Limit reached';
+
+  @override
+  String quotaReachedDesc(String resource, String plan) {
+    return 'You\'ve reached the $resource limit on the $plan plan. Upgrade to continue.';
+  }
+
+  @override
+  String quotaNearLimit(int current, int limit, String resource) {
+    return 'You\'ve used $current of $limit $resource.';
+  }
+
+  @override
+  String get upgrade => 'Upgrade';
+
+  @override
+  String usageOf(int current, int limit) {
+    return '$current of $limit';
+  }
+
+  @override
+  String get resourcePatients => 'patients';
+
+  @override
+  String get resourceSessions => 'sessions';
+
+  @override
+  String get resourceTemplates => 'templates';
+
+  @override
+  String get resourceAnamnesis => 'anamnesis';
 }

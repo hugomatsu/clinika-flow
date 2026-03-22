@@ -462,5 +462,86 @@
   "bestWeekSessions": "Melhor semana (sessões)",
   "@bestWeekSessions": {},
   "finance": "Financeiro",
-  "@finance": {}
+  "@finance": {},
+
+  "subscription": "Assinatura",
+  "@subscription": {},
+  "currentPlan": "Plano atual",
+  "@currentPlan": {},
+  "upgradePlan": "Alterar plano",
+  "@upgradePlan": {},
+  "freeTier": "Grátis",
+  "@freeTier": {},
+  "essentialTier": "Essencial",
+  "@essentialTier": {},
+  "professionalTier": "Profissional",
+  "@professionalTier": {},
+  "clinicTier": "Clínica",
+  "@clinicTier": {},
+  "perMonth": "/mês",
+  "@perMonth": {},
+  "perYear": "/ano",
+  "@perYear": {},
+  "unlimitedLabel": "Ilimitado",
+  "@unlimitedLabel": {},
+  "patientsLimit": "Pacientes",
+  "@patientsLimit": {},
+  "sessionsMonthLimit": "Sessões/mês",
+  "@sessionsMonthLimit": {},
+  "templatesLimit": "Modelos",
+  "@templatesLimit": {},
+  "anamnesisMonthLimit": "Anamneses/mês",
+  "@anamnesisMonthLimit": {},
+  "storageLimit": "Armazenamento",
+  "@storageLimit": {},
+  "customBrandingFeature": "Marca personalizada",
+  "@customBrandingFeature": {},
+  "dataExportFeature": "Exportação de dados",
+  "@dataExportFeature": {},
+  "dashboardHistory": "Histórico do painel",
+  "@dashboardHistory": {},
+  "days30": "30 dias",
+  "@days30": {},
+  "months12": "12 meses",
+  "@months12": {},
+  "selectPlan": "Selecionar",
+  "@selectPlan": {},
+  "currentPlanBadge": "Atual",
+  "@currentPlanBadge": {},
+  "planUpgraded": "Plano alterado com sucesso!",
+  "@planUpgraded": {},
+  "quotaReached": "Limite atingido",
+  "@quotaReached": {},
+  "quotaReachedDesc": "Você atingiu o limite de {resource} do plano {plan}. Faça upgrade para continuar.",
+  "@quotaReachedDesc": {
+    "placeholders": {
+      "resource": { "type": "String" },
+      "plan": { "type": "String" }
+    }
+  },
+  "quotaNearLimit": "Você usou {current} de {limit} {resource}.",
+  "@quotaNearLimit": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "limit": { "type": "int" },
+      "resource": { "type": "String" }
+    }
+  },
+  "upgrade": "Fazer upgrade",
+  "@upgrade": {},
+  "usageOf": "{current} de {limit}",
+  "@usageOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "limit": { "type": "int" }
+    }
+  },
+  "resourcePatients": "pacientes",
+  "@resourcePatients": {},
+  "resourceSessions": "sessões",
+  "@resourceSessions": {},
+  "resourceTemplates": "modelos",
+  "@resourceTemplates": {},
+  "resourceAnamnesis": "anamneses",
+  "@resourceAnamnesis": {}
 }

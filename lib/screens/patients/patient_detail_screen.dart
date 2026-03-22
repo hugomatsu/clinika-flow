@@ -9,6 +9,8 @@ import '../../models/appointment.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
 import '../../services/image_service.dart';
+import '../../services/quota_gate.dart';
+import '../../services/quota_service.dart';
 import 'patient_form_screen.dart';
 import '../appointments/appointment_form_screen.dart';
 import '../sessions/session_record_screen.dart';
@@ -246,6 +248,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   }
 
   Future<void> _sendAnamnesis(Patient p) async {
+    final allowed =
+        await QuotaGate.checkAndGate(context, QuotaResource.anamnesis);
+    if (!allowed || !mounted) return;
     final loc = AppLocalizations.of(context)!;
 
     // Pick template — use branding default if set
@@ -303,6 +308,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
 
     final created = await FirestoreService.createAnamnesisRequest(request);
+    await QuotaService.incrementAnamnesisCount();
 
     if (!mounted) return;
 

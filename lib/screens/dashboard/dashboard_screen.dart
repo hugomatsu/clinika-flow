@@ -5,6 +5,7 @@ import '../../models/patient.dart';
 import '../../models/session_record.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
+import '../../services/quota_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,6 +18,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _loading = true;
   bool _isAnnual = false;
   DateTime _currentDate = DateTime.now();
+  int _dashboardDaysLimit = 0; // 0 = unlimited
 
   // Raw data
   List<Patient> _allPatients = [];
@@ -42,12 +44,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final patients = await FirestoreService.getAllPatients();
       final sessions = await FirestoreService.getAllSessions();
       final templates = await FirestoreService.getAllTemplates();
+      final sub = await QuotaService.getSubscription();
 
       if (mounted) {
         setState(() {
           _allPatients = patients;
           _allSessions = sessions;
           _allTemplates = templates;
+          _dashboardDaysLimit = sub.limits.dashboardDaysHistory;
           _loading = false;
         });
         _computeStats();
@@ -172,7 +176,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return date.year * 100 + week;
   }
 
+  bool _canNavigateBack() {
+    if (_dashboardDaysLimit == 0) return true; // unlimited
+    final earliest =
+        DateTime.now().subtract(Duration(days: _dashboardDaysLimit));
+    if (_isAnnual) {
+      return DateTime(_currentDate.year - 1) .isAfter(earliest);
+    } else {
+      return DateTime(_currentDate.year, _currentDate.month - 1)
+          .isAfter(earliest);
+    }
+  }
+
   void _navigate(int delta) {
+    if (delta < 0 && !_canNavigateBack()) return;
     setState(() {
       if (_isAnnual) {
         _currentDate =
@@ -336,7 +353,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Navigation
             IconButton(
               icon: const Icon(Icons.chevron_left),
-              onPressed: () => _navigate(-1),
+              onPressed: _canNavigateBack() ? () => _navigate(-1) : null,
             ),
             Text(
               _periodLabel(),

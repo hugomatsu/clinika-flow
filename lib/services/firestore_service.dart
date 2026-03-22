@@ -7,6 +7,7 @@ import '../models/financial_record.dart';
 import '../models/patient.dart';
 import '../models/session_record.dart';
 import '../models/session_template.dart';
+import '../models/subscription.dart';
 
 class FirestoreService {
   static FirebaseFirestore get _db => FirebaseFirestore.instance;
@@ -32,6 +33,21 @@ class FirestoreService {
 
   static DocumentReference<Map<String, dynamic>> get _branding =>
       _db.doc('clinics/$_clinicId/settings/branding');
+
+  static DocumentReference<Map<String, dynamic>> get _subscription =>
+      _db.doc('clinics/$_clinicId/settings/subscription');
+
+  // ── Subscription ────────────────────────────────────────────────────────────
+
+  static Future<Subscription> getSubscription() async {
+    final doc = await _subscription.get();
+    if (!doc.exists || doc.data() == null) return Subscription();
+    return Subscription.fromMap(doc.data()!);
+  }
+
+  static Future<void> updateSubscription(Subscription sub) async {
+    await _subscription.set(sub.toMap(), SetOptions(merge: true));
+  }
 
   // ── Patient ───────────────────────────────────────────────────────────────
 

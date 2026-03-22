@@ -7,6 +7,8 @@ import '../../models/session_record.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
 import '../../services/image_service.dart';
+import '../../services/quota_gate.dart';
+import '../../services/quota_service.dart';
 
 class SessionRecordScreen extends StatefulWidget {
   final Appointment appointment;
@@ -144,6 +146,12 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
   }
 
   Future<void> _save() async {
+    // Gate new session creation
+    if (_existingRecord == null) {
+      final allowed =
+          await QuotaGate.checkAndGate(context, QuotaResource.sessions);
+      if (!allowed) return;
+    }
     setState(() => _saving = true);
 
     try {
@@ -168,6 +176,7 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
         await FirestoreService.updateSessionRecord(record);
       } else {
         await FirestoreService.createSessionRecord(record);
+        await QuotaService.incrementSessionCount();
       }
 
       // Mark appointment as completed

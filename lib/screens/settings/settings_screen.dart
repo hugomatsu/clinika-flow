@@ -3,10 +3,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/branding_preferences.dart';
 import '../../models/session_template.dart';
+import '../../models/subscription.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../services/image_service.dart';
+import '../../services/quota_service.dart';
 import '../../services/theme_service.dart';
+import '../subscription/upgrade_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,6 +21,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   BrandingPreferences _prefs = BrandingPreferences();
   List<SessionTemplate> _templates = [];
+  Subscription _subscription = Subscription();
   bool _loading = true;
   bool _saving = false;
   late TextEditingController _clinicNameCtrl;
@@ -72,10 +76,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final prefs = await FirestoreService.getBranding();
       final templates = await FirestoreService.getAllTemplates();
+      final sub = await QuotaService.getSubscription();
       if (mounted) {
         setState(() {
           _prefs = prefs ?? BrandingPreferences();
           _templates = templates;
+          _subscription = sub;
           _clinicNameCtrl.text = _prefs.clinicName;
           _loading = false;
         });
@@ -328,6 +334,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                // ── Subscription ──────────────────────────────────────────
+                _sectionHeader(context, Icons.workspace_premium, loc.subscription),
+                const SizedBox(height: 8),
+                _buildSubscriptionCard(loc, colorScheme),
+                const SizedBox(height: 24),
+
                 // ── Clinic name ─────────────────────────────────────────────
                 _sectionHeader(context, Icons.business, loc.clinicName),
                 const SizedBox(height: 8),
@@ -620,6 +632,142 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 32),
               ],
             ),
+    );
+  }
+
+  Widget _buildSubscriptionCard(AppLocalizations loc, ColorScheme colorScheme) {
+    final tier = _subscription.tier;
+    final limits = _subscription.limits;
+    final Color tierColor;
+    final String tierName;
+    switch (tier) {
+      case SubscriptionTier.free:
+        tierColor = Colors.grey.shade600;
+        tierName = loc.freeTier;
+      case SubscriptionTier.essential:
+        tierColor = Colors.blue.shade700;
+        tierName = loc.essentialTier;
+      case SubscriptionTier.professional:
+        tierColor = Colors.purple.shade700;
+        tierName = loc.professionalTier;
+      case SubscriptionTier.clinic:
+        tierColor = Colors.teal.shade700;
+        tierName = loc.clinicTier;
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: tierColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    tierName,
+                    style: TextStyle(
+                      color: tierColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                FilledButton.tonalIcon(
+                  onPressed: () async {
+                    await UpgradeScreen.show(context);
+                    _load();
+                  },
+                  icon: const Icon(Icons.rocket_launch, size: 16),
+                  label: Text(loc.upgradePlan),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Usage bars
+            _usageRow(
+              loc.patientsLimit,
+              _subscription.patientCount,
+              limits.maxPatients,
+              loc,
+            ),
+            const SizedBox(height: 6),
+            _usageRow(
+              loc.sessionsMonthLimit,
+              _subscription.monthlySessionCount,
+              limits.maxSessionsPerMonth,
+              loc,
+            ),
+            const SizedBox(height: 6),
+            _usageRow(
+              loc.templatesLimit,
+              _templates.length,
+              limits.maxTemplates,
+              loc,
+            ),
+            const SizedBox(height: 6),
+            _usageRow(
+              loc.anamnesisMonthLimit,
+              _subscription.monthlyAnamnesisCount,
+              limits.maxAnamnesisPerMonth,
+              loc,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _usageRow(String label, int current, int limit, AppLocalizations loc) {
+    final isUnlimited = limit == 0;
+    final ratio = isUnlimited ? 0.0 : (current / limit).clamp(0.0, 1.0);
+    final isNear = !isUnlimited && ratio >= 0.8;
+
+    return Row(
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(label, style: const TextStyle(fontSize: 12)),
+        ),
+        Expanded(
+          child: isUnlimited
+              ? Text(
+                  loc.unlimitedLabel,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: ratio,
+                    backgroundColor: Colors.grey.shade200,
+                    color: isNear ? Colors.orange : Colors.blue,
+                    minHeight: 8,
+                  ),
+                ),
+        ),
+        if (!isUnlimited) ...[
+          const SizedBox(width: 8),
+          Text(
+            loc.usageOf(current, limit),
+            style: TextStyle(
+              fontSize: 11,
+              color: isNear ? Colors.orange.shade800 : Colors.grey.shade600,
+              fontWeight: isNear ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ],
     );
   }
 

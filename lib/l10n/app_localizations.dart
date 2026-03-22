@@ -1423,6 +1423,198 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Financeiro'**
   String get finance;
+
+  /// No description provided for @subscription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura'**
+  String get subscription;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano atual'**
+  String get currentPlan;
+
+  /// No description provided for @upgradePlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterar plano'**
+  String get upgradePlan;
+
+  /// No description provided for @freeTier.
+  ///
+  /// In pt, this message translates to:
+  /// **'Grátis'**
+  String get freeTier;
+
+  /// No description provided for @essentialTier.
+  ///
+  /// In pt, this message translates to:
+  /// **'Essencial'**
+  String get essentialTier;
+
+  /// No description provided for @professionalTier.
+  ///
+  /// In pt, this message translates to:
+  /// **'Profissional'**
+  String get professionalTier;
+
+  /// No description provided for @clinicTier.
+  ///
+  /// In pt, this message translates to:
+  /// **'Clínica'**
+  String get clinicTier;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'/mês'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In pt, this message translates to:
+  /// **'/ano'**
+  String get perYear;
+
+  /// No description provided for @unlimitedLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ilimitado'**
+  String get unlimitedLabel;
+
+  /// No description provided for @patientsLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pacientes'**
+  String get patientsLimit;
+
+  /// No description provided for @sessionsMonthLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessões/mês'**
+  String get sessionsMonthLimit;
+
+  /// No description provided for @templatesLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelos'**
+  String get templatesLimit;
+
+  /// No description provided for @anamnesisMonthLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anamneses/mês'**
+  String get anamnesisMonthLimit;
+
+  /// No description provided for @storageLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Armazenamento'**
+  String get storageLimit;
+
+  /// No description provided for @customBrandingFeature.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marca personalizada'**
+  String get customBrandingFeature;
+
+  /// No description provided for @dataExportFeature.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exportação de dados'**
+  String get dataExportFeature;
+
+  /// No description provided for @dashboardHistory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Histórico do painel'**
+  String get dashboardHistory;
+
+  /// No description provided for @days30.
+  ///
+  /// In pt, this message translates to:
+  /// **'30 dias'**
+  String get days30;
+
+  /// No description provided for @months12.
+  ///
+  /// In pt, this message translates to:
+  /// **'12 meses'**
+  String get months12;
+
+  /// No description provided for @selectPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar'**
+  String get selectPlan;
+
+  /// No description provided for @currentPlanBadge.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atual'**
+  String get currentPlanBadge;
+
+  /// No description provided for @planUpgraded.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano alterado com sucesso!'**
+  String get planUpgraded;
+
+  /// No description provided for @quotaReached.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite atingido'**
+  String get quotaReached;
+
+  /// No description provided for @quotaReachedDesc.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você atingiu o limite de {resource} do plano {plan}. Faça upgrade para continuar.'**
+  String quotaReachedDesc(String resource, String plan);
+
+  /// No description provided for @quotaNearLimit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você usou {current} de {limit} {resource}.'**
+  String quotaNearLimit(int current, int limit, String resource);
+
+  /// No description provided for @upgrade.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fazer upgrade'**
+  String get upgrade;
+
+  /// No description provided for @usageOf.
+  ///
+  /// In pt, this message translates to:
+  /// **'{current} de {limit}'**
+  String usageOf(int current, int limit);
+
+  /// No description provided for @resourcePatients.
+  ///
+  /// In pt, this message translates to:
+  /// **'pacientes'**
+  String get resourcePatients;
+
+  /// No description provided for @resourceSessions.
+  ///
+  /// In pt, this message translates to:
+  /// **'sessões'**
+  String get resourceSessions;
+
+  /// No description provided for @resourceTemplates.
+  ///
+  /// In pt, this message translates to:
+  /// **'modelos'**
+  String get resourceTemplates;
+
+  /// No description provided for @resourceAnamnesis.
+  ///
+  /// In pt, this message translates to:
+  /// **'anamneses'**
+  String get resourceAnamnesis;
 }
 
 class _AppLocalizationsDelegate

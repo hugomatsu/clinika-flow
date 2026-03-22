@@ -245,5 +245,57 @@
   "totalReceived": "Total received",
   "bestWeek": "Best week",
   "bestWeekSessions": "Best week (sessions)",
-  "finance": "Finance"
+  "finance": "Finance",
+
+  "subscription": "Subscription",
+  "currentPlan": "Current plan",
+  "upgradePlan": "Change plan",
+  "freeTier": "Free",
+  "essentialTier": "Essential",
+  "professionalTier": "Professional",
+  "clinicTier": "Clinic",
+  "perMonth": "/mo",
+  "perYear": "/yr",
+  "unlimitedLabel": "Unlimited",
+  "patientsLimit": "Patients",
+  "sessionsMonthLimit": "Sessions/month",
+  "templatesLimit": "Templates",
+  "anamnesisMonthLimit": "Anamnesis/month",
+  "storageLimit": "Storage",
+  "customBrandingFeature": "Custom branding",
+  "dataExportFeature": "Data export",
+  "dashboardHistory": "Dashboard history",
+  "days30": "30 days",
+  "months12": "12 months",
+  "selectPlan": "Select",
+  "currentPlanBadge": "Current",
+  "planUpgraded": "Plan changed successfully!",
+  "quotaReached": "Limit reached",
+  "quotaReachedDesc": "You've reached the {resource} limit on the {plan} plan. Upgrade to continue.",
+  "@quotaReachedDesc": {
+    "placeholders": {
+      "resource": { "type": "String" },
+      "plan": { "type": "String" }
+    }
+  },
+  "quotaNearLimit": "You've used {current} of {limit} {resource}.",
+  "@quotaNearLimit": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "limit": { "type": "int" },
+      "resource": { "type": "String" }
+    }
+  },
+  "upgrade": "Upgrade",
+  "usageOf": "{current} of {limit}",
+  "@usageOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "limit": { "type": "int" }
+    }
+  },
+  "resourcePatients": "patients",
+  "resourceSessions": "sessions",
+  "resourceTemplates": "templates",
+  "resourceAnamnesis": "anamnesis"
 }

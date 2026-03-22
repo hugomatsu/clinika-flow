@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/patient.dart';
 import '../../services/firestore_service.dart';
+import '../../services/quota_service.dart';
 
 class PatientFormScreen extends StatefulWidget {
   final Patient? patient;
@@ -87,6 +88,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       await FirestoreService.updatePatient(patient);
     } else {
       await FirestoreService.createPatient(patient);
+      await QuotaService.incrementPatientCount();
     }
 
     if (mounted) {

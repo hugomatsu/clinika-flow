@@ -682,4 +682,106 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get finance => 'Financeiro';
+
+  @override
+  String get subscription => 'Assinatura';
+
+  @override
+  String get currentPlan => 'Plano atual';
+
+  @override
+  String get upgradePlan => 'Alterar plano';
+
+  @override
+  String get freeTier => 'Grátis';
+
+  @override
+  String get essentialTier => 'Essencial';
+
+  @override
+  String get professionalTier => 'Profissional';
+
+  @override
+  String get clinicTier => 'Clínica';
+
+  @override
+  String get perMonth => '/mês';
+
+  @override
+  String get perYear => '/ano';
+
+  @override
+  String get unlimitedLabel => 'Ilimitado';
+
+  @override
+  String get patientsLimit => 'Pacientes';
+
+  @override
+  String get sessionsMonthLimit => 'Sessões/mês';
+
+  @override
+  String get templatesLimit => 'Modelos';
+
+  @override
+  String get anamnesisMonthLimit => 'Anamneses/mês';
+
+  @override
+  String get storageLimit => 'Armazenamento';
+
+  @override
+  String get customBrandingFeature => 'Marca personalizada';
+
+  @override
+  String get dataExportFeature => 'Exportação de dados';
+
+  @override
+  String get dashboardHistory => 'Histórico do painel';
+
+  @override
+  String get days30 => '30 dias';
+
+  @override
+  String get months12 => '12 meses';
+
+  @override
+  String get selectPlan => 'Selecionar';
+
+  @override
+  String get currentPlanBadge => 'Atual';
+
+  @override
+  String get planUpgraded => 'Plano alterado com sucesso!';
+
+  @override
+  String get quotaReached => 'Limite atingido';
+
+  @override
+  String quotaReachedDesc(String resource, String plan) {
+    return 'Você atingiu o limite de $resource do plano $plan. Faça upgrade para continuar.';
+  }
+
+  @override
+  String quotaNearLimit(int current, int limit, String resource) {
+    return 'Você usou $current de $limit $resource.';
+  }
+
+  @override
+  String get upgrade => 'Fazer upgrade';
+
+  @override
+  String usageOf(int current, int limit) {
+    return '$current de $limit';
+  }
+
+  @override
+  String get resourcePatients => 'pacientes';
+
+  @override
+  String get resourceSessions => 'sessões';
+
+  @override
+  String get resourceTemplates => 'modelos';
+
+  @override
+  String get resourceAnamnesis => 'anamneses';
 }

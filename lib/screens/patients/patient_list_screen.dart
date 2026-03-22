@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/patient.dart';
 import '../../services/firestore_service.dart';
+import '../../services/quota_gate.dart';
+import '../../services/quota_service.dart';
+import '../subscription/upgrade_screen.dart';
 import 'patient_form_screen.dart';
 import 'patient_detail_screen.dart';
 
@@ -17,6 +20,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
   List<Patient> _filtered = [];
   PatientStatus? _statusFilter;
   final _searchController = TextEditingController();
+  QuotaResult? _patientQuota;
 
   @override
   void initState() {
@@ -34,9 +38,11 @@ class _PatientListScreenState extends State<PatientListScreen> {
   Future<void> _load() async {
     try {
       final patients = await FirestoreService.getAllPatients();
+      final quota = await QuotaService.checkPatients();
       if (mounted) {
         setState(() {
           _allPatients = patients;
+          _patientQuota = quota;
           _applyFilter();
         });
       }
@@ -57,6 +63,13 @@ class _PatientListScreenState extends State<PatientListScreen> {
   }
 
   Future<void> _openForm({Patient? patient}) async {
+    // Gate new patient creation
+    if (patient == null) {
+      final allowed =
+          await QuotaGate.checkAndGate(context, QuotaResource.patients);
+      if (!allowed) return;
+    }
+    if (!mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -96,6 +109,48 @@ class _PatientListScreenState extends State<PatientListScreen> {
       case PatientStatus.archived:
         return loc.statusArchived;
     }
+  }
+
+  Widget _quotaBanner(AppLocalizations loc, ColorScheme colorScheme) {
+    final q = _patientQuota!;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 18, color: Colors.amber.shade800),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              loc.quotaNearLimit(q.current, q.limit, loc.resourcePatients),
+              style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
+            ),
+          ),
+          TextButton(
+            onPressed: () => _openUpgrade(),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Text(loc.upgrade, style: const TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openUpgrade() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const UpgradeScreen(),
+      ),
+    ).then((_) => _load());
   }
 
   @override
@@ -140,6 +195,8 @@ class _PatientListScreenState extends State<PatientListScreen> {
               ],
             ),
           ),
+          if (_patientQuota != null && _patientQuota!.isNearLimit)
+            _quotaBanner(loc, colorScheme),
           Expanded(
             child: _filtered.isEmpty
                 ? Center(

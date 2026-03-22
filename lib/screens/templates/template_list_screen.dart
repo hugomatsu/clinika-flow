@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
 import '../../models/session_template.dart';
 import '../../services/firestore_service.dart';
+import '../../services/quota_gate.dart';
+import '../../services/quota_service.dart';
 import 'template_builder_screen.dart';
 
 class TemplateListScreen extends StatefulWidget {
@@ -31,6 +33,9 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
   }
 
   Future<void> _create() async {
+    final allowed =
+        await QuotaGate.checkAndGate(context, QuotaResource.templates);
+    if (!allowed || !mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const TemplateBuilderScreen()),
@@ -49,6 +54,9 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
   }
 
   Future<void> _duplicate(SessionTemplate source) async {
+    final allowed =
+        await QuotaGate.checkAndGate(context, QuotaResource.templates);
+    if (!allowed || !mounted) return;
     final loc = AppLocalizations.of(context)!;
     final copy = SessionTemplate(
       name: '${source.name} (2)',
