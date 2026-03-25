@@ -331,10 +331,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetDefaults => 'Reset to defaults';
 
   @override
+  String get resetDefaultsConfirm =>
+      'Are you sure you want to reset all appearance settings to their defaults?';
+
+  @override
   String get themeColors => 'Theme colors';
 
   @override
   String get account => 'Account';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get appVersion => 'Version';
+
+  @override
+  String get buildDate => 'Build date';
+
+  @override
+  String get developedBy => 'Developed by';
 
   @override
   String get weekView => 'Week';

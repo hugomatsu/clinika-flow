@@ -233,7 +233,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_isAnnual) {
       return '${_currentDate.year}';
     }
-    return DateFormat.yMMMM(locale).format(_currentDate);
+    final month = DateFormat.MMMM(locale).format(_currentDate);
+    final year = DateFormat.y(locale).format(_currentDate);
+    return '$month\n$year';
   }
 
   @override
@@ -400,8 +402,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildPeriodSelector(AppLocalizations loc, ColorScheme colorScheme) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Column(
           children: [
             // Month/Year toggle
             SegmentedButton<bool>(
@@ -415,22 +417,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 visualDensity: VisualDensity.compact,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 4),
             // Navigation
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              onPressed: _canNavigateBack() ? () => _navigate(-1) : null,
-            ),
-            Text(
-              _periodLabel(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              onPressed: () => _navigate(1),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: _canNavigateBack() ? () => _navigate(-1) : null,
+                ),
+                SizedBox(
+                  width: 90,
+                  child: Text(
+                    _periodLabel(),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () => _navigate(1),
+                ),
+              ],
             ),
           ],
         ),

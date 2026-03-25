@@ -740,6 +740,12 @@ abstract class AppLocalizations {
   /// **'Restaurar padrão'**
   String get resetDefaults;
 
+  /// No description provided for @resetDefaultsConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tem certeza que deseja restaurar todas as configurações de aparência para o padrão?'**
+  String get resetDefaultsConfirm;
+
   /// No description provided for @themeColors.
   ///
   /// In pt, this message translates to:
@@ -751,6 +757,30 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Conta'**
   String get account;
+
+  /// No description provided for @about.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sobre'**
+  String get about;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Versão'**
+  String get appVersion;
+
+  /// No description provided for @buildDate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data de build'**
+  String get buildDate;
+
+  /// No description provided for @developedBy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desenvolvido por'**
+  String get developedBy;
 
   /// No description provided for @weekView.
   ///

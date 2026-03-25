@@ -16,14 +16,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-
-  static const _screens = [
-    PatientListScreen(),
-    AppointmentListScreen(),
-    TemplateListScreen(),
-    DashboardScreen(),
-    SettingsScreen(),
-  ];
+  int _settingsVersion = 0;
 
   @override
   void initState() {
@@ -38,11 +31,22 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: [
+          const PatientListScreen(),
+          const AppointmentListScreen(),
+          const TemplateListScreen(),
+          const DashboardScreen(),
+          SettingsScreen(key: ValueKey(_settingsVersion)),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        onDestinationSelected: (i) {
+          setState(() {
+            if (i == 4 && _currentIndex != 4) _settingsVersion++;
+            _currentIndex = i;
+          });
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.people_outline),

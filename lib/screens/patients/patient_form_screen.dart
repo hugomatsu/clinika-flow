@@ -20,9 +20,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   late final TextEditingController _instagramCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _occupationCtrl;
-  late final TextEditingController _emergencyCtrl;
-  late final TextEditingController _anamnesisCtrl;
-  late final TextEditingController _injuryCtrl;
   DateTime? _dateOfBirth;
   PatientStatus _status = PatientStatus.active;
   bool _saving = false;
@@ -38,9 +35,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     _instagramCtrl = TextEditingController(text: p?.instagram ?? '');
     _emailCtrl = TextEditingController(text: p?.email ?? '');
     _occupationCtrl = TextEditingController(text: p?.occupation ?? '');
-    _emergencyCtrl = TextEditingController(text: p?.emergencyContact ?? '');
-    _anamnesisCtrl = TextEditingController(text: p?.posturalAnamnesis ?? '');
-    _injuryCtrl = TextEditingController(text: p?.injuryHistory ?? '');
     _dateOfBirth = p?.dateOfBirth;
     _status = p?.status ?? PatientStatus.active;
   }
@@ -52,9 +46,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     _instagramCtrl.dispose();
     _emailCtrl.dispose();
     _occupationCtrl.dispose();
-    _emergencyCtrl.dispose();
-    _anamnesisCtrl.dispose();
-    _injuryCtrl.dispose();
     super.dispose();
   }
 
@@ -78,9 +69,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     patient.instagram = _instagramCtrl.text.trim();
     patient.email = _emailCtrl.text.trim();
     patient.occupation = _occupationCtrl.text.trim();
-    patient.emergencyContact = _emergencyCtrl.text.trim();
-    patient.posturalAnamnesis = _anamnesisCtrl.text.trim();
-    patient.injuryHistory = _injuryCtrl.text.trim();
     patient.status = _status;
     if (_dateOfBirth != null) patient.dateOfBirth = _dateOfBirth!;
 
@@ -205,49 +193,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           ? '${_dateOfBirth!.day.toString().padLeft(2, '0')}/${_dateOfBirth!.month.toString().padLeft(2, '0')}/${_dateOfBirth!.year}'
                           : loc.notInformed,
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSection(
-              context,
-              icon: Icons.emergency,
-              children: [
-                TextFormField(
-                  controller: _emergencyCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: loc.emergencyContact,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSection(
-              context,
-              icon: Icons.medical_information,
-              children: [
-                TextFormField(
-                  controller: _anamnesisCtrl,
-                  maxLines: 3,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    labelText: loc.posturalAnamnesis,
-                    border: const OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _injuryCtrl,
-                  maxLines: 3,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    labelText: loc.injuryHistory,
-                    border: const OutlineInputBorder(),
-                    alignLabelWithHint: true,
                   ),
                 ),
               ],

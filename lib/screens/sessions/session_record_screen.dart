@@ -158,7 +158,7 @@ class _SessionRecordScreenState extends State<SessionRecordScreen> {
     try {
       final record = _existingRecord ?? SessionRecord();
       record.appointmentId = widget.appointment.id;
-      record.sessionDateTime = DateTime.now();
+      record.sessionDateTime = widget.appointment.scheduledDate;
 
       if (_template != null && _fields.isNotEmpty) {
         record.templateId = _template!.id;

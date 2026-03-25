@@ -332,10 +332,26 @@ class AppLocalizationsPt extends AppLocalizations {
   String get resetDefaults => 'Restaurar padrão';
 
   @override
+  String get resetDefaultsConfirm =>
+      'Tem certeza que deseja restaurar todas as configurações de aparência para o padrão?';
+
+  @override
   String get themeColors => 'Cores do tema';
 
   @override
   String get account => 'Conta';
+
+  @override
+  String get about => 'Sobre';
+
+  @override
+  String get appVersion => 'Versão';
+
+  @override
+  String get buildDate => 'Data de build';
+
+  @override
+  String get developedBy => 'Desenvolvido por';
 
   @override
   String get weekView => 'Semana';

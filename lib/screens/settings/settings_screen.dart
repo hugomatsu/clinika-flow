@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:clinika_flow/l10n/app_localizations.dart';
+import '../../app_info.dart';
 import '../../models/branding_preferences.dart';
 import '../../models/session_template.dart';
 import '../../models/subscription.dart';
@@ -288,6 +289,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  Future<void> _confirmResetDefaults(AppLocalizations loc) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.resetDefaults),
+        content: Text(loc.resetDefaultsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(loc.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) _resetDefaults();
+  }
+
   Color _hexToColor(String hex) {
     final h = hex.replaceFirst('#', '');
     return Color(int.parse('FF$h', radix: 16));
@@ -305,12 +327,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         actions: [
-          TextButton.icon(
-            onPressed: _saving ? null : _resetDefaults,
-            icon: Icon(Icons.restart_alt, color: colorScheme.onPrimary),
-            label: Text(loc.resetDefaults,
-                style: TextStyle(color: colorScheme.onPrimary)),
-          ),
           if (_saving)
             const Padding(
               padding: EdgeInsets.all(16),
@@ -538,6 +554,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _saving ? null : () => _confirmResetDefaults(loc),
+                  icon: const Icon(Icons.restart_alt),
+                  label: Text(loc.resetDefaults),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
                 const SizedBox(height: 24),
 
                 // ── Profile ──────────────────────────────────────────────────
@@ -609,8 +634,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
+
+                // ── About ─────────────────────────────────────────────────
+                _sectionHeader(context, Icons.info_outline, loc.about),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _aboutRow(loc.appVersion, '$kAppVersion ($kBuildNumber)'),
+                        const SizedBox(height: 8),
+                        _aboutRow(loc.buildDate, kBuildDate),
+                        const SizedBox(height: 8),
+                        _aboutRow(loc.developedBy, 'Hugo Matsumoto'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
               ],
             ),
+    );
+  }
+
+  Widget _aboutRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ),
+      ],
     );
   }
 

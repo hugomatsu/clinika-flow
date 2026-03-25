@@ -41,7 +41,14 @@
       "Bash(./build-share-android.sh --notes \"v1.0.0+7: Novo tipo de campo Valor \\(R$\\) nos modelos \\(conta no faturamento\\), modelo padrão de sessão leve \\(anotações, valor pago, tempo gasto\\), configuração de modelo padrão de sessão e anamnese, WhatsApp e Instagram no cadastro do paciente com botões para abrir app, botões de anamnese renomeados, nav Config. encurtado\")",
       "Bash(gsutil cors:*)",
       "Bash(xargs cat:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(ls -la /Users/hugomatsumoto/Projects/HMLabs/clinika-flow/lib/l10n/app_localizations*.dart)",
+      "Bash(git status:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(./build-share-android.sh --notes \"- Novo sistema de acompanhamento pós-sessão com cards no Dashboard:*)",
+      "Bash(./build-share-android.sh --notes \"fix: use appointment scheduled date for session stats \\(not recording date\\); fix: patient form removes emergency contact, postural anamnesis, injury history fields; fix: settings screen reloads templates when switching tabs; fix: stats period selector layout fits 2-line month text; fix: reset defaults moved to body with confirmation dialog; new: About section in settings with version, build date and developer info; fix: field editor expanded area padding; fix: text inputs auto-capitalize in template builder\")",
+      "Bash(./build-share-android.sh --notes \"- Sistema de comunicação e reengajamento de pacientes:*)"
     ]
   }
 }

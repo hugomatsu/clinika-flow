@@ -278,7 +278,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
         ),
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: _fieldConfigEditor(field, loc),
           ),
         ],
@@ -293,6 +293,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
         // Label (all types)
         TextField(
           controller: TextEditingController(text: field.label),
+          textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
             labelText: loc.fieldLabel,
             border: const OutlineInputBorder(),
